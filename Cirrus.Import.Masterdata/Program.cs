@@ -24,7 +24,10 @@ namespace Cirrus.Import.Masterdata
 
                 var services = new ServiceCollection();
 
-                services.AddSingleton<ApiOptions>(services => configuation.GetSection("Api").Get<ApiOptions>());
+                services.AddSingleton(_ => configuation.GetSection("Api").Get<ApiOptions>());
+                services.AddSingleton(_ => configuation.GetSection("Groups").Get<GroupOptions>());
+                services.AddSingleton(_ => configuation.GetSection("Taxes").Get<TaxOptions>());
+
                 services.AddSingleton<Importer>();
                 services.AddSingleton<UnitApi>();
                 services.AddSingleton<TaxApi>();

@@ -1,35 +1,28 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Common;
-using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Taxes
 {
     class TaxApi
     {
-        private readonly ApiOptions config;
+        private readonly TaxOptions taxOptions;
 
-        public TaxApi(ApiOptions config)
+        public TaxApi(TaxOptions taxOptions)
         {
-            this.config = config;
+            this.taxOptions = taxOptions;
         }
 
-        public async Task<List<CustomMapping<Tax>>> GetMappingsAsync()
+        public Task<List<CustomMapping<Tax>>> GetMappingsAsync()
         {
-            return new List<CustomMapping<Tax>>
+            return Task.FromResult(new List<CustomMapping<Tax>>
             {
-                new CustomMapping<Tax> { Value = Tax.None, Id = "1" },
-                new CustomMapping<Tax> { Value = Tax.Default, Id = "3" },
-                new CustomMapping<Tax> { Value = Tax.Reduced, Id = "2" },
-                new CustomMapping<Tax> { Value = Tax.TakeAway, Id = "2" },
-                new CustomMapping<Tax> { Value = Tax.Fuel, Id = "85" },
-            };
-        }
-
-        private IFlurlRequest GetClient()
-        {
-            return this.config.Endpoint
-                .WithOAuthBearerToken(this.config.Token);
+                new CustomMapping<Tax> { Value = Tax.None, Id = this.taxOptions.NoneTaxId.ToString() },
+                new CustomMapping<Tax> { Value = Tax.Default, Id = this.taxOptions.DefaultTaxId.ToString() },
+                new CustomMapping<Tax> { Value = Tax.Reduced, Id = this.taxOptions.ReducedTaxId.ToString() },
+                new CustomMapping<Tax> { Value = Tax.TakeAway, Id = this.taxOptions.TakeAwayTaxId.ToString() },
+                new CustomMapping<Tax> { Value = Tax.Fuel, Id = this.taxOptions.FuelTaxId.ToString() },
+            });
         }
     }
 }

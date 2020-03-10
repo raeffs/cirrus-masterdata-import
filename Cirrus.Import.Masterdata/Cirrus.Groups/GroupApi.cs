@@ -1,31 +1,24 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Common;
-using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Groups
 {
     class GroupApi
     {
-        private readonly ApiOptions config;
+        private readonly GroupOptions groupOptions;
 
-        public GroupApi(ApiOptions config)
+        public GroupApi(GroupOptions groupOptions)
         {
-            this.config = config;
+            this.groupOptions = groupOptions;
         }
 
-        public async Task<List<CustomMapping<Group>>> GetMappingsAsync()
+        public Task<List<CustomMapping<Group>>> GetMappingsAsync()
         {
-            return new List<CustomMapping<Group>>
+            return Task.FromResult(new List<CustomMapping<Group>>
             {
-                new CustomMapping<Group> { Value = Group.Default, Id = "1" },
-            };
-        }
-
-        private IFlurlRequest GetClient()
-        {
-            return this.config.Endpoint
-                .WithOAuthBearerToken(this.config.Token);
+                new CustomMapping<Group> { Value = Group.Default, Id = this.groupOptions.DefaultGroupId.ToString() },
+            });
         }
     }
 }
