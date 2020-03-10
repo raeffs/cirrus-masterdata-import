@@ -2,7 +2,7 @@
 
 namespace Cirrus.Import.Masterdata.External.TheCocktailDb
 {
-    class ProductSummaryDto
+    class CocktailSummaryDto
     {
         [JsonProperty("idDrink")]
         public long Id { get; set; }

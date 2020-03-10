@@ -8,42 +8,68 @@ namespace Cirrus.Import.Masterdata.External.TheCocktailDb
 {
     class TheCocktailDbProvider : ExternalProvider
     {
-        private IReadOnlyList<Assortment> assortments;
+        private readonly string AssortmentId = "Cocktails";
+        private readonly string RootCategoryId = "Cocktails";
+
+        private IReadOnlyList<Category> categories;
 
         public string Key => "the-cocktail-db";
 
-        public async Task<List<Assortment>> GetAssortmentsAsync()
+        public Task<List<Assortment>> GetAssortmentsAsync()
         {
-            if (this.assortments != null)
+            return Task.FromResult(new List<Assortment>
             {
-                return this.assortments.ToList();
+                new Assortment
+                {
+                    ExternalKey = this.Key,
+                    ExternalId = this.AssortmentId
+                }
+            });
+        }
+
+        public async Task<List<Category>> GetCategoriesAsync()
+        {
+            if (this.categories != null)
+            {
+                return this.categories.ToList();
             }
+
+            var categories = new List<Category>
+            {
+                new Category { ExternalKey = this.Key, ExternalId = this.RootCategoryId }
+            };
 
             var result = await this.GetClient()
                 .AppendPathSegment("list.php")
                 .SetQueryParam("c", "list")
-                .GetJsonAsync<CollectionDto<AssortmentDto>>();
+                .GetJsonAsync<CollectionDto<CategoryDto>>();
 
-            var assortments = result.Items
-                .Select(x => new Assortment
+            categories.AddRange(result.Items
+                .Select(x => new Category
                 {
                     ExternalKey = this.Key,
-                    ExternalId = x.Name
+                    ExternalId = x.Name,
+                    ExternalParentId = this.RootCategoryId
                 })
-                .ToList();
+                .ToList());
 
-            this.assortments = assortments;
-            return this.assortments.ToList();
+            this.categories = categories;
+            return this.categories.ToList();
         }
 
         public async IAsyncEnumerable<List<Product>> GetProductsAsync()
         {
-            foreach (var assortment in await this.GetAssortmentsAsync())
+            foreach (var category in await this.GetCategoriesAsync())
             {
+                if (!category.IsChild)
+                {
+                    continue;
+                }
+
                 var result = await this.GetClient()
                     .AppendPathSegment("filter.php")
-                    .SetQueryParam("c", assortment.ExternalId)
-                    .GetJsonAsync<CollectionDto<ProductSummaryDto>>();
+                    .SetQueryParam("c", category.ExternalId)
+                    .GetJsonAsync<CollectionDto<CocktailSummaryDto>>();
 
                 yield return result.Items
                     .Select(x => new Product
@@ -51,13 +77,14 @@ namespace Cirrus.Import.Masterdata.External.TheCocktailDb
                         ExternalKey = this.Key,
                         ExternalId = x.Id.ToString(),
                         Name = x.Name,
-                        ExternalAssortmentId = assortment.ExternalId,
+                        ExternalAssortmentId = this.AssortmentId,
                         ExternalUnit = Unit.Piece,
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, 15),
-                        Picture = x.Picture
+                        Picture = x.Picture,
+                        ExternalCategoryId = category.ExternalId
                     })
                     .ToList();
             }

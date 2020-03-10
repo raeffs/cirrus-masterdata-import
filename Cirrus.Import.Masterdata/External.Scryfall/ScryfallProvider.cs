@@ -8,18 +8,33 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
 {
     class ScryfallProvider : ExternalProvider
     {
+        private readonly string AssortmentId = "Magic The Gathering Cards";
+        private readonly string RootCategoryId = "Magic The Gathering Cards";
+
         public string Key => "scryfall";
 
-        public async Task<List<Assortment>> GetAssortmentsAsync()
+        public Task<List<Assortment>> GetAssortmentsAsync()
         {
-            return new List<Assortment>
+            return Task.FromResult(new List<Assortment>
             {
                 new Assortment
                 {
                     ExternalKey = this.Key,
-                    ExternalId = "Magic The Gathering Cards"
+                    ExternalId = this.AssortmentId
                 }
-            };
+            });
+        }
+
+        public Task<List<Category>> GetCategoriesAsync()
+        {
+            return Task.FromResult(new List<Category>
+            {
+                new Category
+                {
+                    ExternalKey = this.Key,
+                    ExternalId = this.RootCategoryId
+                }
+            });
         }
 
         public async IAsyncEnumerable<List<Product>> GetProductsAsync()
@@ -42,13 +57,14 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
                         ExternalKey = this.Key,
                         ExternalId = x.Id,
                         Name = x.Name,
-                        ExternalAssortmentId = "Magic The Gathering Cards",
+                        ExternalAssortmentId = this.AssortmentId,
                         ExternalUnit = Unit.Piece,
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, this.GetMaxPrice(x.Rarity)),
-                        Picture = x.Picture
+                        Picture = x.Picture,
+                        ExternalCategoryId = this.RootCategoryId
                     })
                     .ToList();
             }

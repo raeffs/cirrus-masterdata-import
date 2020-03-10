@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Cirrus.Assortments;
+using Cirrus.Import.Masterdata.Cirrus.Categories;
 using Cirrus.Import.Masterdata.Cirrus.Groups;
 using Cirrus.Import.Masterdata.Cirrus.Products;
 using Cirrus.Import.Masterdata.Cirrus.Taxes;
@@ -29,13 +30,16 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton(_ => configuation.GetSection("Taxes").Get<TaxOptions>());
 
                 services.AddSingleton<Importer>();
+
                 services.AddSingleton<UnitApi>();
                 services.AddSingleton<TaxApi>();
                 services.AddSingleton<GroupApi>();
                 services.AddSingleton<AssortmentApi>();
+                services.AddSingleton<CategoryApi>();
                 services.AddSingleton<ProductApi>();
-                // services.AddSingleton<ExternalProvider, External.TheMealDb.TheMealDbProvider>();
-                // services.AddSingleton<ExternalProvider, External.TheCocktailDb.TheCocktailDbProvider>();
+
+                services.AddSingleton<ExternalProvider, External.TheMealDb.TheMealDbProvider>();
+                services.AddSingleton<ExternalProvider, External.TheCocktailDb.TheCocktailDbProvider>();
                 services.AddSingleton<ExternalProvider, External.Scryfall.ScryfallProvider>();
                 services.AddSingleton<ExternalProvider, External.PokemonTcg.PokemonTcgProvider>();
 

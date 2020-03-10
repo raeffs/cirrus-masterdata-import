@@ -8,18 +8,33 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
 {
     class PokemonTcgProvider : ExternalProvider
     {
+        private readonly string AssortmentId = "Pokemon TCG Cards";
+        private readonly string RootCategoryId = "Pokemon TCG Cards";
+
         public string Key => "pokemon-tcg";
 
-        public async Task<List<Assortment>> GetAssortmentsAsync()
+        public Task<List<Assortment>> GetAssortmentsAsync()
         {
-            return new List<Assortment>
+            return Task.FromResult(new List<Assortment>
             {
                 new Assortment
                 {
                     ExternalKey = this.Key,
-                    ExternalId = "Pokemon TCG Cards"
+                    ExternalId = this.AssortmentId
                 }
-            };
+            });
+        }
+
+        public Task<List<Category>> GetCategoriesAsync()
+        {
+            return Task.FromResult(new List<Category>
+            {
+                new Category
+                {
+                    ExternalKey = this.Key,
+                    ExternalId = this.RootCategoryId
+                }
+            });
         }
 
         public async IAsyncEnumerable<List<Product>> GetProductsAsync()
@@ -46,13 +61,14 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
                         ExternalKey = this.Key,
                         ExternalId = x.Id,
                         Name = x.Name,
-                        ExternalAssortmentId = "Pokemon TCG Cards",
+                        ExternalAssortmentId = this.AssortmentId,
                         ExternalUnit = Unit.Piece,
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, this.GetMaxPrice(x.Rarity)),
-                        Picture = x.Picture
+                        Picture = x.Picture,
+                        ExternalCategoryId = this.RootCategoryId
                     })
                     .ToList();
             }

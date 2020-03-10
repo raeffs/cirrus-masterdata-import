@@ -2,7 +2,7 @@
 
 namespace Cirrus.Import.Masterdata.External.TheCocktailDb
 {
-    class AssortmentDto
+    class CategoryDto
     {
         [JsonProperty("strCategory")]
         public string Name { get; set; }

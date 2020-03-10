@@ -25,5 +25,11 @@
         public Price Price { get; set; }
 
         public string Picture { get; set; }
+
+        public string ExternalCategoryId { get; set; }
+
+        public string CategoryId { get; set; }
+
+        public string RootCategoryId { get; set; }
     }
 }

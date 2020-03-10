@@ -9,6 +9,8 @@ namespace Cirrus.Import.Masterdata.Common
 
         Task<List<Assortment>> GetAssortmentsAsync();
 
+        Task<List<Category>> GetCategoriesAsync();
+
         IAsyncEnumerable<List<Product>> GetProductsAsync();
     }
 }

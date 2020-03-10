@@ -90,17 +90,5 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
         public List<Reference> LabelPrintingProductExtension___AutoPrintLabelLayout => Reference.ListFrom("-1");
 
         public bool PosProductExtension___IsQuantityEditable { get; set; }
-
-        // public List<Reference> Category_Id_1 { get; set; } = new List<Reference>();
-
-        // public List<Reference> Category_Id_21 { get; set; } = new List<Reference>();
-
-        // public List<Reference> Category_Id_20 { get; set; } = new List<Reference>();
-
-        // public List<Reference> Category_Id_22 { get; set; } = new List<Reference>();
-
-        // public List<Reference> Category_Id_23 { get; set; } = new List<Reference>();
-
-        // public List<Reference> Category_Id_24 { get; set; } = new List<Reference>();
     }
 }

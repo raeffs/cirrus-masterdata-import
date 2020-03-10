@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Common;
 using Flurl.Http;
+using Newtonsoft.Json.Linq;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Products
 {
@@ -19,6 +20,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
         {
             var add = string.IsNullOrWhiteSpace(product.Id) || product.Id == "0";
             ProductDetailViewModel dto;
+            JObject untypedDto = null;
 
             if (add)
             {
@@ -39,10 +41,11 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             }
             else
             {
-                dto = await this.GetClient()
+                untypedDto = await this.GetClient()
                     .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")
                     .AppendPathSegment(product.Id)
-                    .GetJsonAsync<ProductDetailViewModel>();
+                    .GetJsonAsync<JObject>();
+                dto = untypedDto.ToObject<ProductDetailViewModel>();
             }
 
             var update = add
@@ -55,7 +58,8 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
                 || !dto.Properties.Tax.ContainsReference(product.TaxId)
                 || !dto.Properties.ProductGroup.ContainsReference(product.GroupId)
                 || !dto.Lists.ProductAssortments.ContainsReference(product.AssortmentId)
-                || !dto.Lists.Barcodes.ContainsCode(product.Barcode);
+                || !dto.Lists.Barcodes.ContainsCode(product.Barcode)
+                || !untypedDto.ContainsCategory(product.RootCategoryId, product.CategoryId);
 
             if (!update)
             {
@@ -73,9 +77,12 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             dto.Lists.ProductAssortments = Reference.ListFrom(product.AssortmentId);
             dto.Lists.Barcodes = ProductBarcode.ListFrom(product.Barcode);
 
+            untypedDto = JObject.FromObject(dto);
+            untypedDto.SetCategory(product.RootCategoryId, product.CategoryId);
+
             var response = await this.GetClient()
                 .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")
-                .PostJsonAsync(dto)
+                .PostJsonAsync(untypedDto)
                 .ReceiveJson<ProductDetailViewModel>();
 
             if (!response.IsValid)
