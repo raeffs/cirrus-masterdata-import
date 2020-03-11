@@ -28,6 +28,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton(_ => configuation.GetSection("Api").Get<ApiOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Groups").Get<GroupOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Taxes").Get<TaxOptions>());
+                services.AddSingleton(_ => configuation.GetSection("Brickset").Get<External.Brickset.BricksetOptions>());
 
                 services.AddSingleton<Importer>();
 
@@ -42,6 +43,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton<ExternalProvider, External.TheCocktailDb.TheCocktailDbProvider>();
                 services.AddSingleton<ExternalProvider, External.Scryfall.ScryfallProvider>();
                 services.AddSingleton<ExternalProvider, External.PokemonTcg.PokemonTcgProvider>();
+                services.AddSingleton<ExternalProvider, External.Brickset.BricksetProvider>();
 
                 var importer = services.BuildServiceProvider().GetService<Importer>();
                 await importer.Import();
