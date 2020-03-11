@@ -107,7 +107,7 @@ namespace Cirrus.Import.Masterdata.External.Brickset
                             ExternalId = x.SetId,
                             Name = x.Name,
                             ExternalAssortmentId = this.AssortmentId,
-                            ExternalUnit = Unit.Piece,
+                            ExternalUnit = this.GetUnit(x.PackagingType),
                             ExternalTax = Tax.Default,
                             ExternalGroup = Group.Default,
                             Barcode = Barcode.FromId(this.Key, x.SetId),
@@ -120,6 +120,17 @@ namespace Cirrus.Import.Masterdata.External.Brickset
                 while (hasMore);
             }
         }
+
+        private Unit GetUnit(string packagingType) => packagingType switch
+        {
+            "Polybag" => Unit.Polybag,
+            "FoilPack" => Unit.Polybag,
+            "BlisterPack" => Unit.Polybag,
+            "Box" => Unit.Box,
+            "PlasticBox" => Unit.Box,
+            "Bucket" => Unit.Box,
+            _ => Unit.Piece
+        };
 
         private IFlurlRequest GetClient()
         {

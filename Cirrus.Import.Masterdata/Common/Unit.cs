@@ -2,6 +2,10 @@
 {
     enum Unit
     {
-        Piece
+        Piece,
+        Polybag,
+        Box,
+        Litre,
+        Kilogram
     }
 }

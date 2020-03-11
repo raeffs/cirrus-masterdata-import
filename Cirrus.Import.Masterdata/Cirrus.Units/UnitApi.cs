@@ -12,7 +12,11 @@ namespace Cirrus.Import.Masterdata.Cirrus.Units
         private readonly ApiOptions config;
         private readonly Dictionary<string, Unit> mapping = new Dictionary<string, Unit>
         {
-            { "piece", Unit.Piece }
+            { "piece", Unit.Piece },
+            { "box", Unit.Box },
+            { "polybag", Unit.Polybag },
+            { "litre", Unit.Litre },
+            { "kilogram", Unit.Kilogram }
         };
 
         public UnitApi(ApiOptions config)

@@ -25,6 +25,8 @@ namespace Cirrus.Import.Masterdata.External.Brickset
         public string UkRetailPrice { get; set; }
 
         public string EuRetailPrice { get; set; }
+
+        public string PackagingType { get; set; }
     }
 
     class ArrayOfSetsDto
