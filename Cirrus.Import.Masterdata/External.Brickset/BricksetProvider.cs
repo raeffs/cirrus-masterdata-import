@@ -51,6 +51,8 @@ namespace Cirrus.Import.Masterdata.External.Brickset
                 .GetJsonFromXmlAsync<ThemeCollectionDto>();
 
             categories.AddRange(result.ArrayOfThemes.Themes
+                // we cannot properly deserialize the xml as json if there are not more than two elements
+                .Where(x => x.SetCount > 1)
                 .Select(x => new Category
                 {
                     ExternalKey = this.Key,
@@ -109,7 +111,7 @@ namespace Cirrus.Import.Masterdata.External.Brickset
                             ExternalTax = Tax.Default,
                             ExternalGroup = Group.Default,
                             Barcode = Barcode.FromId(this.Key, x.SetId),
-                            Price = Price.From(x.Price, 200),
+                            Price = x.Price != null ? Price.From(x.Price) : Price.FromId(x.SetId, 200),
                             Picture = x.Picture,
                             ExternalCategoryId = category.ExternalId
                         })

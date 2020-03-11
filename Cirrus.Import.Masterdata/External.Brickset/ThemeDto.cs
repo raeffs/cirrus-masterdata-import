@@ -5,6 +5,8 @@ namespace Cirrus.Import.Masterdata.External.Brickset
     class ThemeDto
     {
         public string Theme { get; set; }
+
+        public int SetCount { get; set; }
     }
 
     class ArrayOfThemesDto

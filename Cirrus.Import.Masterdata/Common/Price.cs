@@ -14,14 +14,14 @@ namespace Cirrus.Import.Masterdata.Common
 
         public static implicit operator decimal(Price value) => value.value;
 
-        public static Price From(string value, int maxPriceIfInvalid)
+        public static Price From(string value)
         {
             if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
             {
                 return new Price(result);
             }
 
-            return Price.FromId(value, maxPriceIfInvalid);
+            throw new System.Exception();
         }
 
         public static Price FromId(long id, int maxPrice)
