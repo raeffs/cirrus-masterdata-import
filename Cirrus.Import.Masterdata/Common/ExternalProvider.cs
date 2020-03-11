@@ -5,6 +5,8 @@ namespace Cirrus.Import.Masterdata.Common
 {
     interface ExternalProvider
     {
+        bool Enabled { get; }
+
         string Key { get; }
 
         Task<List<Assortment>> GetAssortmentsAsync();

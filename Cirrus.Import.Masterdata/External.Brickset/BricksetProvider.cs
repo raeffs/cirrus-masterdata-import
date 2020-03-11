@@ -10,9 +10,10 @@ namespace Cirrus.Import.Masterdata.External.Brickset
     {
         private readonly string AssortmentId = "Lego";
         private readonly string RootCategoryId = "Lego";
-
         private readonly BricksetOptions options;
         private IReadOnlyList<Category> categories;
+
+        public bool Enabled => this.options.Enabled;
 
         public string Key => "brickset";
 

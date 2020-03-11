@@ -10,10 +10,17 @@ namespace Cirrus.Import.Masterdata.External.TheMealDb
     {
         private readonly string AssortmentId = "Meals";
         private readonly string RootCategoryId = "Meals";
-
+        private readonly TheMealDbOptions options;
         private IReadOnlyList<Category> categories;
 
+        public bool Enabled => this.options.Enabled;
+
         public string Key => "the-meal-db";
+
+        public TheMealDbProvider(TheMealDbOptions options)
+        {
+            this.options = options;
+        }
 
         public Task<List<Assortment>> GetAssortmentsAsync()
         {

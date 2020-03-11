@@ -10,8 +10,16 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
     {
         private readonly string AssortmentId = "Magic The Gathering Cards";
         private readonly string RootCategoryId = "Magic The Gathering Cards";
+        private readonly ScryfallOptions options;
+
+        public bool Enabled => this.options.Enabled;
 
         public string Key => "scryfall";
+
+        public ScryfallProvider(ScryfallOptions options)
+        {
+            this.options = options;
+        }
 
         public Task<List<Assortment>> GetAssortmentsAsync()
         {

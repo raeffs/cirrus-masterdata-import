@@ -10,8 +10,16 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
     {
         private readonly string AssortmentId = "Pokemon TCG Cards";
         private readonly string RootCategoryId = "Pokemon TCG Cards";
+        private readonly PokemonTcgOptions options;
+
+        public bool Enabled => this.options.Enabled;
 
         public string Key => "pokemon-tcg";
+
+        public PokemonTcgProvider(PokemonTcgOptions options)
+        {
+            this.options = options;
+        }
 
         public Task<List<Assortment>> GetAssortmentsAsync()
         {

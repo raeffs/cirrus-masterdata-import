@@ -28,6 +28,10 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton(_ => configuation.GetSection("Api").Get<ApiOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Groups").Get<GroupOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Taxes").Get<TaxOptions>());
+                services.AddSingleton(_ => configuation.GetSection("TheMealDb").Get<External.TheMealDb.TheMealDbOptions>());
+                services.AddSingleton(_ => configuation.GetSection("TheCocktailDb").Get<External.TheCocktailDb.TheCocktailDbOptions>());
+                services.AddSingleton(_ => configuation.GetSection("Scryfall").Get<External.Scryfall.ScryfallOptions>());
+                services.AddSingleton(_ => configuation.GetSection("PokemonTcg").Get<External.PokemonTcg.PokemonTcgOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Brickset").Get<External.Brickset.BricksetOptions>());
 
                 services.AddSingleton<Importer>();

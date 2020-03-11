@@ -1,6 +1,8 @@
-﻿namespace Cirrus.Import.Masterdata.External.Brickset
+﻿using Cirrus.Import.Masterdata.Common;
+
+namespace Cirrus.Import.Masterdata.External.Brickset
 {
-    class BricksetOptions
+    class BricksetOptions : ExternalProviderOptions
     {
         public string ApiKey { get; set; }
     }

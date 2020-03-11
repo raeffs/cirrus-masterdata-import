@@ -42,7 +42,7 @@ namespace Cirrus.Import.Masterdata
 
         public async Task Import()
         {
-            foreach (var provider in this.providers)
+            foreach (var provider in this.providers.Where(x => x.Enabled))
             {
                 await this.ProcessAssortments(provider);
                 await this.ProcessCategories(provider);

@@ -10,10 +10,17 @@ namespace Cirrus.Import.Masterdata.External.TheCocktailDb
     {
         private readonly string AssortmentId = "Cocktails";
         private readonly string RootCategoryId = "Cocktails";
-
+        private readonly TheCocktailDbOptions options;
         private IReadOnlyList<Category> categories;
 
+        public bool Enabled => this.options.Enabled;
+
         public string Key => "the-cocktail-db";
+
+        public TheCocktailDbProvider(TheCocktailDbOptions options)
+        {
+            this.options = options;
+        }
 
         public Task<List<Assortment>> GetAssortmentsAsync()
         {
