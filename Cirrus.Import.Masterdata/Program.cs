@@ -33,6 +33,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton(_ => configuation.GetSection("Scryfall").Get<External.Scryfall.ScryfallOptions>());
                 services.AddSingleton(_ => configuation.GetSection("PokemonTcg").Get<External.PokemonTcg.PokemonTcgOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Brickset").Get<External.Brickset.BricksetOptions>());
+                services.AddSingleton(_ => configuation.GetSection("PunkApi").Get<External.PunkApi.PunkApiOptions>());
 
                 services.AddSingleton<Importer>();
 
@@ -48,6 +49,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton<ExternalProvider, External.Scryfall.ScryfallProvider>();
                 services.AddSingleton<ExternalProvider, External.PokemonTcg.PokemonTcgProvider>();
                 services.AddSingleton<ExternalProvider, External.Brickset.BricksetProvider>();
+                services.AddSingleton<ExternalProvider, External.PunkApi.PunkApiProvider>();
 
                 var importer = services.BuildServiceProvider().GetService<Importer>();
                 await importer.Import();
