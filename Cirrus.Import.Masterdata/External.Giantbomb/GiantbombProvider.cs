@@ -45,7 +45,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
 
             var categories = new List<Category>
             {
-                new Category { ExternalKey = this.Key, ExternalId = this.RootCategoryId },
+                new Category { ExternalKey = this.Key, ExternalId = this.RootCategoryId, AllowsMultipleAssignments = true },
                 new Category { ExternalKey = this.Key, ExternalId = this.HardwareCategoryId, ExternalParentId = this.RootCategoryId }
             };
             var products = new List<Product>();
@@ -81,7 +81,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                         Barcode = Barcode.FromId(this.Key, x.Guid),
                         Price = x.Price != null ? Price.From(x.Price) : Price.FromId(x.Guid, 500),
                         Picture = x.Picture,
-                        ExternalCategoryId = this.HardwareCategoryId
+                        ExternalCategoryIds = new List<string> { this.HardwareCategoryId, x.Name }
                     })
                     .ToList());
             }
@@ -118,7 +118,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                         Barcode = Barcode.FromId(this.Key, x.Guid),
                         Price = Price.FromId(x.Guid, 100),
                         Picture = x.Picture,
-                        ExternalCategoryId = x.Platforms.Select(y => y.Name).FirstOrDefault()
+                        ExternalCategoryIds = x.Platforms.Select(y => y.Name).ToList()
                     })
                     .ToList();
             }

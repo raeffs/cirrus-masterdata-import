@@ -86,7 +86,7 @@ namespace Cirrus.Import.Masterdata
                 Console.Write($"Processing batch of {products.Count} products");
                 var productMappings = await this.productApi.GetMappingsAsync(provider.Key, products.Select(x => x.ExternalId).ToList());
                 var assortmentMappings = await this.assortmentApi.GetMappingsAsync(provider.Key, products.Select(x => x.ExternalAssortmentId).ToList());
-                var categoryMappings = await this.categoryApi.GetMappingsAsync(provider.Key, products.Select(x => x.ExternalCategoryId).ToList());
+                var categoryMappings = await this.categoryApi.GetMappingsAsync(provider.Key, products.SelectMany(x => x.ExternalCategoryIds).ToList());
                 var unitMapping = await this.unitApi.GetMappingsAsync();
                 var taxMapping = await this.taxApi.GetMappingsAsync();
                 var groupMapping = await this.groupApi.GetMappingsAsync();
@@ -95,8 +95,8 @@ namespace Cirrus.Import.Masterdata
                     Console.Write($"\rProcessing batch of {products.Count} products: {products.IndexOf(product) + 1} / {products.Count}");
                     product.Id = productMappings.Where(x => x.Value == product.ExternalId).Select(x => x.Id).SingleOrDefault();
                     product.AssortmentId = assortmentMappings.Where(x => x.Value == product.ExternalAssortmentId).Select(x => x.Id).Single();
-                    product.CategoryId = categoryMappings.Where(x => x.Value == product.ExternalCategoryId).Select(x => x.Id).Single();
-                    product.RootCategoryId = await this.categoryApi.GetRootCategoryId(product.CategoryId);
+                    product.CategoryIds = categoryMappings.Where(x => product.ExternalCategoryIds.Contains(x.Value)).Select(x => x.Id).ToList();
+                    product.RootCategoryId = await this.categoryApi.GetRootCategoryId(product.CategoryIds.First());
                     product.UnitId = unitMapping.Where(x => x.Value == product.ExternalUnit).Select(x => x.Id).Single();
                     product.TaxId = taxMapping.Where(x => x.Value == product.ExternalTax).Select(x => x.Id).Single();
                     product.GroupId = groupMapping.Where(x => x.Value == product.ExternalGroup).Select(x => x.Id).Single();

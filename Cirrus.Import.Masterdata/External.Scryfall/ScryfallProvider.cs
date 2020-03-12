@@ -72,7 +72,7 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, this.GetMaxPrice(x.Rarity)),
                         Picture = x.Picture,
-                        ExternalCategoryId = this.RootCategoryId
+                        ExternalCategoryIds = new List<string> { this.RootCategoryId }
                     })
                     .ToList();
             }

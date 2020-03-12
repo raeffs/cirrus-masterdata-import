@@ -37,7 +37,8 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
             var update = add
                 || dto.Properties.Name != category.Name
                 || dto.Properties.ExternalId != category.UniqueId
-                || !dto.Properties.Parent.ContainsReference(category.ExternalParentId);
+                || (!category.IsChild && dto.Properties.MaxOneNodePerProductAssignable != !category.AllowsMultipleAssignments)
+                || (category.IsChild && !dto.Properties.Parent.ContainsReference(this.knownMappings.Find(category, x => x.ExternalParentId).Single()));
 
             if (!update)
             {
@@ -56,10 +57,11 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
 
             dto.Properties.Name = category.Name;
             dto.Properties.ExternalId = category.UniqueId;
+            dto.Properties.MaxOneNodePerProductAssignable = !category.AllowsMultipleAssignments;
 
             var response = await this.GetClient()
                 .AppendPathSegment("api/vme/v1/viewmodel/MdmProductCategories")
-                .SetQueryParam("parentId", category.IsChild ? this.knownMappings.Find(category, x => x.ExternalParentId) : null)
+                .SetQueryParam("parentId", category.IsChild ? this.knownMappings.Find(category, x => x.ExternalParentId).Single() : null)
                 .PostJsonAsync(dto)
                 .ReceiveJson<CategoryDetailViewModel>();
 

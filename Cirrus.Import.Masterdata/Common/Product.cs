@@ -1,4 +1,6 @@
-﻿namespace Cirrus.Import.Masterdata.Common
+﻿using System.Collections.Generic;
+
+namespace Cirrus.Import.Masterdata.Common
 {
     class Product : BaseModel
     {
@@ -26,9 +28,9 @@
 
         public string Picture { get; set; }
 
-        public string ExternalCategoryId { get; set; }
+        public List<string> ExternalCategoryIds { get; set; }
 
-        public string CategoryId { get; set; }
+        public List<string> CategoryIds { get; set; }
 
         public string RootCategoryId { get; set; }
     }

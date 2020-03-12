@@ -91,7 +91,7 @@ namespace Cirrus.Import.Masterdata.External.TheMealDb
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, 30),
                         Picture = x.Picture,
-                        ExternalCategoryId = category.ExternalId
+                        ExternalCategoryIds = new List<string> { category.ExternalId }
                     })
                     .ToList();
             }

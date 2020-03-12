@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Cirrus.Import.Masterdata.Cirrus
 {
@@ -36,6 +37,16 @@ namespace Cirrus.Import.Masterdata.Cirrus
             {
                 new Reference(id)
             };
+        }
+
+        public static List<Reference> ListFrom(List<string> ids)
+        {
+            if (ids == null)
+            {
+                return new List<Reference>();
+            }
+
+            return ids.Where(x => x != null && x != "0").Select(x => Reference.From(x)).ToList();
         }
 
         public override bool Equals(object value)

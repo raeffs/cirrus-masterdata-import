@@ -16,7 +16,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             return barcodes.Any(x => x.Barcode == code);
         }
 
-        public static bool ContainsCategory(this JObject model, string rootCategoryId, string categoryId)
+        public static bool ContainsAllCategories(this JObject model, string rootCategoryId, List<string> categoryIds)
         {
             if (model == null)
             {
@@ -35,12 +35,15 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
                 return false;
             }
 
-            return refs.ToObject<List<Reference>>().Contains(Reference.From(categoryId));
+            var actual = refs.ToObject<List<Reference>>();
+            var expected = Reference.ListFrom(categoryIds);
+
+            return !actual.Except(expected).Union(expected.Except(actual)).Any();
         }
 
-        public static void SetCategory(this JObject model, string rootCategoryId, string categoryId)
+        public static void SetCategories(this JObject model, string rootCategoryId, List<string> categoryIds)
         {
-            model.Value<JObject>("Properties").Add($"Category_Id_{rootCategoryId}", JToken.FromObject(Reference.ListFrom(categoryId)));
+            model.Value<JObject>("Properties").Add($"Category_Id_{rootCategoryId}", JToken.FromObject(Reference.ListFrom(categoryIds)));
         }
     }
 }

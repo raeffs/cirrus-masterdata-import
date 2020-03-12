@@ -59,7 +59,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
                 || !dto.Properties.ProductGroup.ContainsReference(product.GroupId)
                 || !dto.Lists.ProductAssortments.ContainsReference(product.AssortmentId)
                 || !dto.Lists.Barcodes.ContainsCode(product.Barcode)
-                || !untypedDto.ContainsCategory(product.RootCategoryId, product.CategoryId);
+                || !untypedDto.ContainsAllCategories(product.RootCategoryId, product.CategoryIds);
 
             if (!update)
             {
@@ -78,7 +78,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             dto.Lists.Barcodes = ProductBarcode.ListFrom(product.Barcode);
 
             untypedDto = JObject.FromObject(dto);
-            untypedDto.SetCategory(product.RootCategoryId, product.CategoryId);
+            untypedDto.SetCategories(product.RootCategoryId, product.CategoryIds);
 
             var response = await this.GetClient()
                 .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")

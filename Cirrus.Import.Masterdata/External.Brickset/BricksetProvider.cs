@@ -113,7 +113,7 @@ namespace Cirrus.Import.Masterdata.External.Brickset
                             Barcode = Barcode.FromId(this.Key, x.SetId),
                             Price = x.Price != null ? Price.From(x.Price) : Price.FromId(x.SetId, 200),
                             Picture = x.Picture,
-                            ExternalCategoryId = category.ExternalId
+                            ExternalCategoryIds = new List<string> { category.ExternalId }
                         })
                         .ToList();
                 }
