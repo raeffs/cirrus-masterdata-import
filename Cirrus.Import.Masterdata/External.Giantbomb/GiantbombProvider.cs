@@ -10,6 +10,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
     {
         private readonly string AssortmentId = "Games";
         private readonly string RootCategoryId = "Games";
+        private readonly string HardwareAssortmentId = "Hardware";
         private readonly string HardwareCategoryId = "Hardware";
         private readonly GiantbombOptions options;
         private IReadOnlyList<Category> categories;
@@ -32,6 +33,11 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                 {
                     ExternalKey = this.Key,
                     ExternalId = this.AssortmentId
+                },
+                new Assortment
+                {
+                    ExternalKey = this.Key,
+                    ExternalId = this.HardwareAssortmentId
                 }
             });
         }
@@ -74,7 +80,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                         ExternalKey = this.Key,
                         ExternalId = x.Guid,
                         Name = x.Name,
-                        ExternalAssortmentId = this.AssortmentId,
+                        ExternalAssortmentId = this.HardwareAssortmentId,
                         ExternalUnit = Unit.Piece,
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
@@ -103,6 +109,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                 result = await this.GetClient()
                     .AppendPathSegment("games")
                     .SetQueryParam("offset", result?.NextOffset ?? 0)
+                    .SetQueryParam("sort", "id:asc")
                     .GetJsonAsync<CollectionDto<GameDto>>();
 
                 yield return result.Results
