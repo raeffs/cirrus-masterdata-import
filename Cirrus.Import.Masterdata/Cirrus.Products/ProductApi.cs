@@ -72,7 +72,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             dto.Properties.ExternalId = product.UniqueId;
             dto.Properties.Price = product.Price;
             dto.Properties.Picture = product.Picture;
-            dto.Properties.MinAges = product.MinAgesForYouthProtection.Select(x => new Reference(x, x)).ToList();
+            dto.Properties.MinAges = Reference.ListFrom(product.MinAgesForYouthProtection);
             dto.Properties.Unit = Reference.ListFrom(product.UnitId);
             dto.Properties.Tax = Reference.ListFrom(product.TaxId);
             dto.Properties.ProductGroup = Reference.ListFrom(product.GroupId);

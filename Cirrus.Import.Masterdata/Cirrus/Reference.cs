@@ -10,11 +10,10 @@ namespace Cirrus.Import.Masterdata.Cirrus
 
         public string Name { get; }
 
-        public Reference(string id, string name = "random")
+        public Reference(string id)
         {
             this.Id = id;
-            // name needs to be something != empty
-            this.Name = name;
+            this.Name = id;
         }
 
         public static Reference From(string id)

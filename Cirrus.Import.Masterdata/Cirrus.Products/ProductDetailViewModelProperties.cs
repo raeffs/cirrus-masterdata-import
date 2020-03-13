@@ -48,7 +48,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
 
         public string Ingredients { get; set; }
 
-        public List<string> Tags { get; set; } = new List<string>();
+        public List<Reference> Tags { get; set; } = new List<Reference>();
 
         public bool ForceReceiptPrint { get; set; }
 
