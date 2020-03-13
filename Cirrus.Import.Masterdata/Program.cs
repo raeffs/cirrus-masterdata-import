@@ -48,6 +48,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddExternalProvider<External.PunkApi.PunkApiProvider, External.PunkApi.PunkApiOptions>("PunkApi");
                 services.AddExternalProvider<External.Giantbomb.GiantbombProvider, External.Giantbomb.GiantbombOptions>("Giantbomb");
                 services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
+                services.AddExternalProvider<External.Fono.FonoProvider, External.Fono.FonoOptions>("Fono");
 
                 var importer = services.BuildServiceProvider().GetService<Importer>();
                 await importer.Import();
