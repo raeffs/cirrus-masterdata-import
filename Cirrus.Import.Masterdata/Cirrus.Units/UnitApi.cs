@@ -7,7 +7,7 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Units
 {
-    class UnitApi
+    class UnitApi : BaseApi<Unit>
     {
         private readonly ApiOptions config;
         private readonly Dictionary<string, Unit> mapping = new Dictionary<string, Unit>
@@ -24,16 +24,16 @@ namespace Cirrus.Import.Masterdata.Cirrus.Units
             this.config = config;
         }
 
-        public async Task<List<CustomMapping<Unit>>> GetMappingsAsync()
+        protected override async Task<IEnumerable<Mapping<Unit>>> LoadMappingsAsync(string key, IEnumerable<Unit> values)
         {
             var response = await this.GetClient()
                 .AppendPathSegment("api/mdm/v1/units/mappings")
                 .SetQueryParam("keys", "import")
                 .SetQueryParam("values", string.Join(',', this.mapping.Keys))
-                .GetJsonAsync<PagedList<Mapping>>();
+                .GetJsonAsync<PagedList<Mapping<string>>>();
 
             var result = response.Items
-                .Select(x => new CustomMapping<Unit>
+                .Select(x => new Mapping<Unit>
                 {
                     Id = x.Id,
                     Value = this.mapping[x.Value]

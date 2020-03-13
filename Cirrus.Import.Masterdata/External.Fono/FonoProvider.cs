@@ -51,6 +51,7 @@ namespace Cirrus.Import.Masterdata.External.Fono
                 .GetJsonAsync<List<DeviceDto>>();
 
             categories.AddRange(result
+                .Where(x => !string.IsNullOrWhiteSpace(x.Brand))
                 .Select(x => x.Brand)
                 .Distinct()
                 .Select(x => new Category

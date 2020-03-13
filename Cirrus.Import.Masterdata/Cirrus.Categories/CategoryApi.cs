@@ -6,10 +6,9 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Categories
 {
-    class CategoryApi
+    class CategoryApi : BaseApi<string>
     {
         private readonly ApiOptions config;
-        private readonly HashSet<Mapping> knownMappings = new HashSet<Mapping>();
         private readonly Dictionary<string, string> childToParentMap = new Dictionary<string, string>();
 
         public CategoryApi(ApiOptions config)
@@ -17,83 +16,35 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
             this.config = config;
         }
 
-        public async Task<long> AddOrUpdateAsync(Category category)
+        public async Task AddOrUpdateAsync(IEnumerable<Category> categories)
         {
-            var add = string.IsNullOrWhiteSpace(category.Id) || category.Id == "0";
-            CategoryDetailViewModel dto;
-
-            if (add)
+            var key = categories.Select(x => x.ExternalKey).Distinct().Single();
+            await this.GetMappingsAsync(key, categories.Select(x => x.ExternalId));
+            foreach (var category in categories)
             {
-                dto = new CategoryDetailViewModel();
+                var id = await this.AddOrUpdateAsync(category);
+                this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = category.ExternalId });
+                this.childToParentMap[id] = await this.GetMappingAsync(key, category.ExternalParentId);
+            }
+        }
+
+        public async Task<string> GetRootCategoryId(string childCategoryId)
+        {
+            if (this.childToParentMap.ContainsKey(childCategoryId))
+            {
+                var parent = this.childToParentMap[childCategoryId];
+                return string.IsNullOrWhiteSpace(parent) ? childCategoryId : await this.GetRootCategoryId(parent);
             }
             else
             {
-                dto = await this.GetClient()
-                    .AppendPathSegment("api/vme/v1/viewmodel/MdmProductCategories")
-                    .AppendPathSegment(category.Id)
-                    .GetJsonAsync<CategoryDetailViewModel>();
+                return childCategoryId;
             }
-
-            var update = add
-                || dto.Properties.Name != category.Name
-                || dto.Properties.ExternalId != category.UniqueId
-                || (!category.IsChild && dto.Properties.MaxOneNodePerProductAssignable != !category.AllowsMultipleAssignments)
-                || (category.IsChild && !dto.Properties.Parent.ContainsReference(this.knownMappings.Find(category, x => x.ExternalParentId).Single()));
-
-            if (!update)
-            {
-                this.knownMappings.Add(new Mapping
-                {
-                    Id = dto.Properties.Id,
-                    Key = category.ExternalKey,
-                    Value = category.ExternalId
-                });
-                if (category.IsChild)
-                {
-                    this.childToParentMap[dto.Properties.Id] = dto.Properties.Parent.Select(x => x.Id).Single();
-                }
-                return long.Parse(dto.Properties.Id);
-            }
-
-            dto.Properties.Name = category.Name;
-            dto.Properties.ExternalId = category.UniqueId;
-            dto.Properties.MaxOneNodePerProductAssignable = !category.AllowsMultipleAssignments;
-
-            var response = await this.GetClient()
-                .AppendPathSegment("api/vme/v1/viewmodel/MdmProductCategories")
-                .SetQueryParam("parentId", category.IsChild ? this.knownMappings.Find(category, x => x.ExternalParentId).Single() : null)
-                .PostJsonAsync(dto)
-                .ReceiveJson<CategoryDetailViewModel>();
-
-            if (!response.IsValid)
-            {
-                throw new ViewModelValidationException();
-            }
-
-            this.knownMappings.Add(new Mapping
-            {
-                Id = response.Properties.Id,
-                Key = category.ExternalKey,
-                Value = category.ExternalId
-            });
-            if (category.IsChild)
-            {
-                this.childToParentMap[response.Properties.Id] = response.Properties.Parent.Select(x => x.Id).Single();
-            }
-            return long.Parse(response.Properties.Id);
         }
 
-        public async Task<List<Mapping>> GetMappingsAsync(string key, List<string> values)
+        protected override async Task<IEnumerable<Mapping<string>>> LoadMappingsAsync(string key, IEnumerable<string> values)
         {
-            values = values.Distinct().ToList();
-
-            if (values.All(x => this.knownMappings.Any(y => y.Value == x)))
-            {
-                return this.knownMappings.Where(x => values.Any(y => x.Value == y)).ToList();
-            }
-
-            var mappings = new List<Mapping>();
-            var newMappings = new List<Mapping>();
+            var mappings = new List<Mapping<string>>();
+            var newMappings = new List<Mapping<string>>();
             var namesOfInterest = values.Select(x => $"{x} ({key})").ToList();
             TreeViewModel<CategoryTreeViewModel> response = null;
 
@@ -108,7 +59,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
 
                 newMappings = response.Data
                     .Where(x => namesOfInterest.Contains(x.Name) && !mappings.Any(y => y.Id == x.Id))
-                    .Select(x => new Mapping
+                    .Select(x => new Mapping<string>
                     {
                         Id = x.Id,
                         Key = key,
@@ -120,21 +71,54 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
             }
             while (newMappings.Any());
 
-            this.knownMappings.AddRange(newMappings);
-
             return mappings;
         }
 
-        public async Task<string> GetRootCategoryId(string childCategoryId)
+        private async Task<string> AddOrUpdateAsync(Category category)
         {
-            if (this.childToParentMap.ContainsKey(childCategoryId))
+            var id = await this.GetMappingAsync(category.ExternalKey, category.ExternalId);
+            var add = string.IsNullOrWhiteSpace(id);
+            CategoryDetailViewModel dto;
+
+            if (add)
             {
-                return await this.GetRootCategoryId(this.childToParentMap[childCategoryId]);
+                dto = new CategoryDetailViewModel();
             }
             else
             {
-                return childCategoryId;
+                dto = await this.GetClient()
+                    .AppendPathSegment("api/vme/v1/viewmodel/MdmProductCategories")
+                    .AppendPathSegment(id)
+                    .GetJsonAsync<CategoryDetailViewModel>();
             }
+
+            var update = add
+                || dto.Properties.Name != category.Name
+                || dto.Properties.ExternalId != category.UniqueId
+                || (!category.IsChild && dto.Properties.MaxOneNodePerProductAssignable != !category.AllowsMultipleAssignments)
+                || (category.IsChild && !dto.Properties.Parent.ContainsReference(await this.GetMappingAsync(category.ExternalKey, category.ExternalParentId)));
+
+            if (!update)
+            {
+                return dto.Properties.Id;
+            }
+
+            dto.Properties.Name = category.Name;
+            dto.Properties.ExternalId = category.UniqueId;
+            dto.Properties.MaxOneNodePerProductAssignable = !category.AllowsMultipleAssignments;
+
+            var response = await this.GetClient()
+                .AppendPathSegment("api/vme/v1/viewmodel/MdmProductCategories")
+                .SetQueryParam("parentId", category.IsChild ? await this.GetMappingAsync(category.ExternalKey, category.ExternalParentId) : null)
+                .PostJsonAsync(dto)
+                .ReceiveJson<CategoryDetailViewModel>();
+
+            if (!response.IsValid)
+            {
+                throw new ViewModelValidationException();
+            }
+
+            return response.Properties.Id;
         }
 
         private IFlurlRequest GetClient()

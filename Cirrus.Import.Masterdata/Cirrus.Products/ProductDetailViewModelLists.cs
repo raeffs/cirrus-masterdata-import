@@ -5,7 +5,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
 {
     class ProductDetailViewModelLists
     {
-        public List<Mapping> Mappings { get; set; } = new List<Mapping>();
+        public List<Mapping<string>> Mappings { get; set; } = new List<Mapping<string>>();
 
         public List<Reference> ProductAssortments { get; set; } = new List<Reference>();
 

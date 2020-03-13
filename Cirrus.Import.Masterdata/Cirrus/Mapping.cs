@@ -2,17 +2,17 @@
 
 namespace Cirrus.Import.Masterdata.Cirrus
 {
-    class Mapping
+    class Mapping<T>
     {
         public string Id { get; set; }
 
         public string Key { get; set; }
 
-        public string Value { get; set; }
+        public T Value { get; set; }
 
         public override bool Equals(object value)
         {
-            Mapping mapping = value as Mapping;
+            Mapping<T> mapping = value as Mapping<T>;
 
             return !Object.ReferenceEquals(null, mapping)
                 && String.Equals(Id, mapping.Id)
@@ -35,7 +35,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
             }
         }
 
-        public static bool operator ==(Mapping mapA, Mapping mapB)
+        public static bool operator ==(Mapping<T> mapA, Mapping<T> mapB)
         {
             if (Object.ReferenceEquals(mapA, mapB))
             {
@@ -50,7 +50,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
             return (mapA.Equals(mapB));
         }
 
-        public static bool operator !=(Mapping mapA, Mapping mapB)
+        public static bool operator !=(Mapping<T> mapA, Mapping<T> mapB)
         {
             return !(mapA == mapB);
         }

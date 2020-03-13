@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Common;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Groups
 {
-    class GroupApi
+    class GroupApi : BaseApi<Group>
     {
         private readonly GroupOptions groupOptions;
 
@@ -13,12 +14,12 @@ namespace Cirrus.Import.Masterdata.Cirrus.Groups
             this.groupOptions = groupOptions;
         }
 
-        public Task<List<CustomMapping<Group>>> GetMappingsAsync()
+        protected override Task<IEnumerable<Mapping<Group>>> LoadMappingsAsync(string key, IEnumerable<Group> values)
         {
-            return Task.FromResult(new List<CustomMapping<Group>>
+            return Task.FromResult(new List<Mapping<Group>>
             {
-                new CustomMapping<Group> { Value = Group.Default, Id = this.groupOptions.DefaultGroupId.ToString() },
-            });
+                new Mapping<Group> { Value = Group.Default, Id = this.groupOptions.DefaultGroupId.ToString() },
+            }.AsEnumerable());
         }
     }
 }

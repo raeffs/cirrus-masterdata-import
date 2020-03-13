@@ -5,8 +5,6 @@ namespace Cirrus.Import.Masterdata.Common
 {
     class BaseModel
     {
-        public string Id { get; set; }
-
         public string ExternalKey { get; set; }
 
         public string ExternalId { get; set; }

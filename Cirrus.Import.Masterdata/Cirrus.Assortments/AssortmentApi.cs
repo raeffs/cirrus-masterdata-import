@@ -6,7 +6,7 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Assortments
 {
-    class AssortmentApi
+    class AssortmentApi : BaseApi<string>
     {
         private readonly ApiOptions config;
 
@@ -15,26 +15,52 @@ namespace Cirrus.Import.Masterdata.Cirrus.Assortments
             this.config = config;
         }
 
-        public async Task<long> AddOrUpdateAsync(Assortment assortment)
+        public async Task AddOrUpdateAsync(IEnumerable<Assortment> assortments)
         {
-            var add = string.IsNullOrWhiteSpace(assortment.Id) || assortment.Id == "0";
+            var key = assortments.Select(x => x.ExternalKey).Distinct().Single();
+            await this.GetMappingsAsync(key, assortments.Select(x => x.ExternalId));
+            foreach (var assortment in assortments)
+            {
+                var id = await this.AddOrUpdateAsync(assortment);
+                this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = assortment.ExternalId });
+            }
+        }
+
+        protected override async Task<IEnumerable<Mapping<string>>> LoadMappingsAsync(string key, IEnumerable<string> values)
+        {
+            var namesOfInterest = values.Select(x => $"{x} ({key})").ToList();
+
+            var response = await this.GetClient()
+                .AppendPathSegment("api/vme/v1/viewmodel/MdmProductAssortments")
+                .SetQueryParam("pageSize", 100)
+                .GetJsonAsync<ListViewModel<AssortmentListViewModel>>();
+
+            return response.Data
+                .Where(x => namesOfInterest.Contains(x.Name))
+                .Select(x => new Mapping<string>
+                {
+                    Id = x.Id,
+                    Key = key,
+                    Value = values.Single(y => x.Name == $"{y} ({key})")
+                })
+                .ToList();
+        }
+
+        private async Task<string> AddOrUpdateAsync(Assortment assortment)
+        {
+            var id = await this.GetMappingAsync(assortment.ExternalKey, assortment.ExternalId);
+            var add = string.IsNullOrWhiteSpace(id);
             AssortmentDetailViewModel dto;
 
             if (add)
             {
-                dto = new AssortmentDetailViewModel
-                {
-                    Properties = new AssortmentDetailViewModelProperties
-                    {
-                        Id = "0"
-                    }
-                };
+                dto = new AssortmentDetailViewModel();
             }
             else
             {
                 dto = await this.GetClient()
                     .AppendPathSegment("api/vme/v1/viewmodel/MdmProductAssortments")
-                    .AppendPathSegment(assortment.Id)
+                    .AppendPathSegment(id)
                     .GetJsonAsync<AssortmentDetailViewModel>();
             }
 
@@ -44,7 +70,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Assortments
 
             if (!update)
             {
-                return long.Parse(dto.Properties.Id);
+                return dto.Properties.Id;
             }
 
             dto.Properties.Name = assortment.Name;
@@ -60,29 +86,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Assortments
                 throw new ViewModelValidationException();
             }
 
-            return long.Parse(response.Properties.Id);
-        }
-
-        public async Task<List<Mapping>> GetMappingsAsync(string key, List<string> values)
-        {
-            values = values.Distinct().ToList();
-
-            var namesOfInterest = values.Select(x => $"{x} ({key})").ToList();
-
-            var response = await this.GetClient()
-                .AppendPathSegment("api/vme/v1/viewmodel/MdmProductAssortments")
-                .SetQueryParam("pageSize", 100)
-                .GetJsonAsync<ListViewModel<AssortmentListViewModel>>();
-
-            return response.Data
-                .Where(x => namesOfInterest.Contains(x.Name))
-                .Select(x => new Mapping
-                {
-                    Id = x.Id,
-                    Key = key,
-                    Value = values.Single(y => x.Name == $"{y} ({key})")
-                })
-                .ToList();
+            return response.Properties.Id;
         }
 
         private IFlurlRequest GetClient()

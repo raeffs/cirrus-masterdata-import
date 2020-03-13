@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Common;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Taxes
 {
-    class TaxApi
+    class TaxApi : BaseApi<Tax>
     {
         private readonly TaxOptions taxOptions;
 
@@ -13,16 +14,16 @@ namespace Cirrus.Import.Masterdata.Cirrus.Taxes
             this.taxOptions = taxOptions;
         }
 
-        public Task<List<CustomMapping<Tax>>> GetMappingsAsync()
+        protected override Task<IEnumerable<Mapping<Tax>>> LoadMappingsAsync(string key, IEnumerable<Tax> values)
         {
-            return Task.FromResult(new List<CustomMapping<Tax>>
+            return Task.FromResult(new List<Mapping<Tax>>
             {
-                new CustomMapping<Tax> { Value = Tax.None, Id = this.taxOptions.NoneTaxId.ToString() },
-                new CustomMapping<Tax> { Value = Tax.Default, Id = this.taxOptions.DefaultTaxId.ToString() },
-                new CustomMapping<Tax> { Value = Tax.Reduced, Id = this.taxOptions.ReducedTaxId.ToString() },
-                new CustomMapping<Tax> { Value = Tax.TakeAway, Id = this.taxOptions.TakeAwayTaxId.ToString() },
-                new CustomMapping<Tax> { Value = Tax.Fuel, Id = this.taxOptions.FuelTaxId.ToString() },
-            });
+                new Mapping<Tax> { Value = Tax.None, Id = this.taxOptions.NoneTaxId.ToString() },
+                new Mapping<Tax> { Value = Tax.Default, Id = this.taxOptions.DefaultTaxId.ToString() },
+                new Mapping<Tax> { Value = Tax.Reduced, Id = this.taxOptions.ReducedTaxId.ToString() },
+                new Mapping<Tax> { Value = Tax.TakeAway, Id = this.taxOptions.TakeAwayTaxId.ToString() },
+                new Mapping<Tax> { Value = Tax.Fuel, Id = this.taxOptions.FuelTaxId.ToString() },
+            }.AsEnumerable());
         }
     }
 }
