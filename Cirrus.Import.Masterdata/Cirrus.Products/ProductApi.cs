@@ -54,6 +54,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
                 || dto.Properties.ExternalId != product.UniqueId
                 || dto.Properties.Price != product.Price
                 || dto.Properties.Picture != product.Picture
+                || !dto.Properties.MinAges.ContainsReferences(product.MinAgesForYouthProtection)
                 || !dto.Properties.Unit.ContainsReference(product.UnitId)
                 || !dto.Properties.Tax.ContainsReference(product.TaxId)
                 || !dto.Properties.ProductGroup.ContainsReference(product.GroupId)
@@ -71,6 +72,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             dto.Properties.ExternalId = product.UniqueId;
             dto.Properties.Price = product.Price;
             dto.Properties.Picture = product.Picture;
+            dto.Properties.MinAges = product.MinAgesForYouthProtection.Select(x => new Reference(x, x)).ToList();
             dto.Properties.Unit = Reference.ListFrom(product.UnitId);
             dto.Properties.Tax = Reference.ListFrom(product.TaxId);
             dto.Properties.ProductGroup = Reference.ListFrom(product.GroupId);

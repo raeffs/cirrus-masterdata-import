@@ -42,7 +42,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
 
         public string DefaultQuantity { get; set; }
 
-        public List<string> MinAges { get; set; } = new List<string>();
+        public List<Reference> MinAges { get; set; } = new List<Reference>();
 
         public List<Reference> AllergyTypes { get; set; } = new List<Reference>();
 

@@ -23,6 +23,14 @@ namespace Cirrus.Import.Masterdata.Cirrus
             return references.Contains(reference);
         }
 
+        public static bool ContainsReferences(this IEnumerable<Reference> candidates, IEnumerable<string> ids)
+        {
+            candidates = candidates ?? new List<Reference>();
+            var references = Reference.ListFrom(ids);
+            return !candidates.Except(references).Union(references.Except(candidates)).Any();
+
+        }
+
         public static IEnumerable<string> Find(this IEnumerable<Mapping> mappings, BaseModel model)
         {
             return mappings.Where(x => x.Key == model.ExternalKey && x.Value == model.ExternalId).Select(x => x.Id);

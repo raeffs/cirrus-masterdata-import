@@ -28,10 +28,12 @@ namespace Cirrus.Import.Masterdata.Common
 
         public string Picture { get; set; }
 
-        public List<string> ExternalCategoryIds { get; set; }
+        public List<string> ExternalCategoryIds { get; set; } = new List<string>();
 
-        public List<string> CategoryIds { get; set; }
+        public List<string> CategoryIds { get; set; } = new List<string>();
 
         public string RootCategoryId { get; set; }
+
+        public List<string> MinAgesForYouthProtection { get; set; } = new List<string>();
     }
 }

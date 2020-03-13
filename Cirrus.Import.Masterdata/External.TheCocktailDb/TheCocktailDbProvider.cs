@@ -91,7 +91,8 @@ namespace Cirrus.Import.Masterdata.External.TheCocktailDb
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, 15),
                         Picture = x.Picture,
-                        ExternalCategoryIds = new List<string> { category.ExternalId }
+                        ExternalCategoryIds = new List<string> { category.ExternalId },
+                        MinAgesForYouthProtection = new List<string> { "18" }
                     })
                     .ToList();
             }

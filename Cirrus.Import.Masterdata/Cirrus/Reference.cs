@@ -8,12 +8,13 @@ namespace Cirrus.Import.Masterdata.Cirrus
     {
         public string Id { get; }
 
-        // name needs to be something != empty
-        public string Name { get; } = "random";
+        public string Name { get; }
 
-        public Reference(string id)
+        public Reference(string id, string name = "random")
         {
             this.Id = id;
+            // name needs to be something != empty
+            this.Name = name;
         }
 
         public static Reference From(string id)
@@ -39,7 +40,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
             };
         }
 
-        public static List<Reference> ListFrom(List<string> ids)
+        public static List<Reference> ListFrom(IEnumerable<string> ids)
         {
             if (ids == null)
             {

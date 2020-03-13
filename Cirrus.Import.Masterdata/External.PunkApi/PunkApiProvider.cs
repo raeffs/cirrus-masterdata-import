@@ -75,7 +75,8 @@ namespace Cirrus.Import.Masterdata.External.PunkApi
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, 10),
                         Picture = x.Picture,
-                        ExternalCategoryIds = new List<string> { this.RootCategoryId }
+                        ExternalCategoryIds = new List<string> { this.RootCategoryId },
+                        MinAgesForYouthProtection = new List<string> { "16" }
                     })
                     .ToList();
             }
