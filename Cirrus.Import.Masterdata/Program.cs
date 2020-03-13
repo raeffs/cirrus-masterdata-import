@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Cirrus.Import.Masterdata
 {
-    class Program
+    static class Program
     {
         static async Task Main(string[] args)
         {
@@ -25,16 +25,11 @@ namespace Cirrus.Import.Masterdata
 
                 var services = new ServiceCollection();
 
+                services.AddSingleton(configuation);
+
                 services.AddSingleton(_ => configuation.GetSection("Api").Get<ApiOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Groups").Get<GroupOptions>());
                 services.AddSingleton(_ => configuation.GetSection("Taxes").Get<TaxOptions>());
-                services.AddSingleton(_ => configuation.GetSection("TheMealDb").Get<External.TheMealDb.TheMealDbOptions>());
-                services.AddSingleton(_ => configuation.GetSection("TheCocktailDb").Get<External.TheCocktailDb.TheCocktailDbOptions>());
-                services.AddSingleton(_ => configuation.GetSection("Scryfall").Get<External.Scryfall.ScryfallOptions>());
-                services.AddSingleton(_ => configuation.GetSection("PokemonTcg").Get<External.PokemonTcg.PokemonTcgOptions>());
-                services.AddSingleton(_ => configuation.GetSection("Brickset").Get<External.Brickset.BricksetOptions>());
-                services.AddSingleton(_ => configuation.GetSection("PunkApi").Get<External.PunkApi.PunkApiOptions>());
-                services.AddSingleton(_ => configuation.GetSection("Giantbomb").Get<External.Giantbomb.GiantbombOptions>());
 
                 services.AddSingleton<Importer>();
 
@@ -45,13 +40,14 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton<CategoryApi>();
                 services.AddSingleton<ProductApi>();
 
-                services.AddSingleton<ExternalProvider, External.TheMealDb.TheMealDbProvider>();
-                services.AddSingleton<ExternalProvider, External.TheCocktailDb.TheCocktailDbProvider>();
-                services.AddSingleton<ExternalProvider, External.Scryfall.ScryfallProvider>();
-                services.AddSingleton<ExternalProvider, External.PokemonTcg.PokemonTcgProvider>();
-                services.AddSingleton<ExternalProvider, External.Brickset.BricksetProvider>();
-                services.AddSingleton<ExternalProvider, External.PunkApi.PunkApiProvider>();
-                services.AddSingleton<ExternalProvider, External.Giantbomb.GiantbombProvider>();
+                services.AddExternalProvider<External.TheMealDb.TheMealDbProvider, External.TheMealDb.TheMealDbOptions>("TheMealDb");
+                services.AddExternalProvider<External.TheCocktailDb.TheCocktailDbProvider, External.TheCocktailDb.TheCocktailDbOptions>("TheCocktailDb");
+                services.AddExternalProvider<External.Scryfall.ScryfallProvider, External.Scryfall.ScryfallOptions>("Scryfall");
+                services.AddExternalProvider<External.PokemonTcg.PokemonTcgProvider, External.PokemonTcg.PokemonTcgOptions>("PokemonTcg");
+                services.AddExternalProvider<External.Brickset.BricksetProvider, External.Brickset.BricksetOptions>("Brickset");
+                services.AddExternalProvider<External.PunkApi.PunkApiProvider, External.PunkApi.PunkApiOptions>("PunkApi");
+                services.AddExternalProvider<External.Giantbomb.GiantbombProvider, External.Giantbomb.GiantbombOptions>("Giantbomb");
+                services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
 
                 var importer = services.BuildServiceProvider().GetService<Importer>();
                 await importer.Import();
@@ -63,6 +59,15 @@ namespace Cirrus.Import.Masterdata
             {
                 Console.WriteLine(e);
             }
+        }
+
+        static IServiceCollection AddExternalProvider<TProvider, TOptions>(this IServiceCollection services, string configurationSectionName)
+            where TOptions : class
+            where TProvider : class, ExternalProvider
+        {
+            return services
+                .AddSingleton(s => s.GetService<IConfigurationRoot>().GetSection(configurationSectionName).Get<TOptions>())
+                .AddSingleton<ExternalProvider, TProvider>();
         }
     }
 }

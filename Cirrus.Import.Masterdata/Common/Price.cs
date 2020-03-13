@@ -14,11 +14,11 @@ namespace Cirrus.Import.Masterdata.Common
 
         public static implicit operator decimal(Price value) => value.value;
 
-        public static Price From(string value)
+        public static Price From(string value, int divisor = 1)
         {
             if (decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var result))
             {
-                return new Price(result);
+                return new Price(result / divisor);
             }
 
             throw new System.Exception();
