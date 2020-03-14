@@ -11,6 +11,7 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
         private readonly string AssortmentId = "Magic The Gathering Cards";
         private readonly string RootCategoryId = "Magic The Gathering Cards";
         private readonly ScryfallOptions options;
+        private IReadOnlyList<Category> categories;
 
         public bool Enabled => this.options.Enabled;
 
@@ -33,28 +34,45 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
             });
         }
 
-        public Task<List<Category>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync()
         {
-            return Task.FromResult(new List<Category>
+            if (this.categories != null)
             {
-                new Category
+                return this.categories.ToList();
+            }
+
+            var categories = new List<Category>
+            {
+                new Category { ExternalKey = this.Key, ExternalId = this.RootCategoryId }
+            };
+
+            var result = await this.GetClient()
+                .AppendPathSegment("sets")
+                .GetJsonAsync<CollectionDto<SetDto>>();
+
+            categories.AddRange(result.Data
+                .Select(x => new Category
                 {
                     ExternalKey = this.Key,
-                    ExternalId = this.RootCategoryId
-                }
-            });
+                    ExternalId = x.Name,
+                    ExternalParentId = this.RootCategoryId
+                })
+                .ToList());
+
+            this.categories = categories;
+            return this.categories.ToList();
         }
 
         public async IAsyncEnumerable<List<Product>> GetProductsAsync()
         {
-            CollectionDto<ProductDto> result = null;
+            CollectionDto<CardDto> result = null;
 
             do
             {
                 result = await this.GetClient()
                     .AppendPathSegment("cards")
                     .SetQueryParam("page", result?.NextPage ?? 1)
-                    .GetJsonAsync<CollectionDto<ProductDto>>();
+                    .GetJsonAsync<CollectionDto<CardDto>>();
 
                 yield return result.Data
                     // the API does not allow us to filter, so we do it afterwards
@@ -72,7 +90,7 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, this.GetMaxPrice(x.Rarity)),
                         Picture = x.Picture,
-                        ExternalCategoryIds = new List<string> { this.RootCategoryId }
+                        ExternalCategoryIds = new List<string> { x.SetName }
                     })
                     .ToList();
             }

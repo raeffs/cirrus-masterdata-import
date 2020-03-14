@@ -2,25 +2,28 @@
 
 namespace Cirrus.Import.Masterdata.External.Scryfall
 {
-    class ProductDto
+    class CardDto
     {
         public string Id { get; set; }
 
         public string Name { get; set; }
 
         [JsonProperty("image_uris")]
-        public ProductImageDto Picture { get; set; }
+        public CardImageDto Picture { get; set; }
 
         [JsonProperty("prices")]
-        public ProductPriceDto Price { get; set; }
+        public CardPriceDto Price { get; set; }
 
         public Rarity Rarity { get; set; }
 
         [JsonProperty("lang")]
         public string Language { get; set; }
+
+        [JsonProperty("set_name")]
+        public string SetName { get; set; }
     }
 
-    class ProductImageDto
+    class CardImageDto
     {
         public string Png { get; set; }
 
@@ -29,10 +32,10 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
             return this;
         }
 
-        public static implicit operator string(ProductImageDto value) => value?.Png;
+        public static implicit operator string(CardImageDto value) => value?.Png;
     }
 
-    class ProductPriceDto
+    class CardPriceDto
     {
         public string Usd { get; set; }
 
@@ -43,7 +46,7 @@ namespace Cirrus.Import.Masterdata.External.Scryfall
             return this;
         }
 
-        public static implicit operator string(ProductPriceDto value) =>
+        public static implicit operator string(CardPriceDto value) =>
             !string.IsNullOrWhiteSpace(value?.Usd) ? value.Usd :
             !string.IsNullOrWhiteSpace(value?.Eur) ? value.Eur :
             null;
