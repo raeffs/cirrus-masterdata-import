@@ -7,6 +7,8 @@ using Cirrus.Import.Masterdata.Cirrus.Products;
 using Cirrus.Import.Masterdata.Cirrus.Taxes;
 using Cirrus.Import.Masterdata.Cirrus.Units;
 using Cirrus.Import.Masterdata.Common;
+using Cirrus.Import.Masterdata.Infrastructure;
+using Flurl.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +20,8 @@ namespace Cirrus.Import.Masterdata
         {
             try
             {
+                FlurlHttp.Configure(settings => settings.HttpClientFactory = new PollyHttpClientFactory());
+
                 var configuation = new ConfigurationBuilder()
                     .AddJsonFile("appsettings.json", false)
                     .AddJsonFile("appsettings.development.json", true)

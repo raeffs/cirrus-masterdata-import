@@ -44,8 +44,16 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             await this.GetMappingsAsync(key, products.Select(x => x.ExternalId));
             foreach (var product in products)
             {
-                var id = await this.AddOrUpdateAsync(product);
-                this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = product.ExternalId });
+                try
+                {
+                    var id = await this.AddOrUpdateAsync(product);
+                    this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = product.ExternalId });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to add or update product (Key = {key}, Value = {product.ExternalId})");
+                    Console.WriteLine(e.Message);
+                }
             }
         }
 
