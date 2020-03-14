@@ -38,7 +38,8 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             var actual = refs.ToObject<List<Reference>>();
             var expected = Reference.ListFrom(categoryIds);
 
-            return !actual.Except(expected).Union(expected.Except(actual)).Any();
+            var result = !actual.Except(expected).Union(expected.Except(actual)).Any();
+            return result;
         }
 
         public static void SetCategories(this JObject model, string rootCategoryId, IEnumerable<string> categoryIds)

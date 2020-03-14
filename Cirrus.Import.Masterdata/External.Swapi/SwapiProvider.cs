@@ -87,7 +87,7 @@ namespace Cirrus.Import.Masterdata.External.Swapi
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
                         Barcode = Barcode.FromId(this.Key, x.Id),
-                        Price = Price.From(x.Price, 10),
+                        Price = Price.From(x.Price, 10) ?? Price.FromId(x.Id, 100000),
                         ExternalCategoryIds = new List<string> { this.VehicleCategoryId }
                     })
                     .ToList();
@@ -114,7 +114,7 @@ namespace Cirrus.Import.Masterdata.External.Swapi
                         ExternalTax = Tax.Default,
                         ExternalGroup = Group.Default,
                         Barcode = Barcode.FromId(this.Key, x.Id),
-                        Price = Price.From(x.Price, 10),
+                        Price = Price.From(x.Price, 10) ?? Price.FromId(x.Id, 1000000),
                         ExternalCategoryIds = new List<string> { this.StarshipCategoryId }
                     })
                     .ToList();

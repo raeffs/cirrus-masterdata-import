@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Cirrus.Import.Masterdata.Cirrus.Assortments;
@@ -106,19 +107,20 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             var categoryIds = (await this.categoryApi.GetMappingsAsync(product.ExternalKey, product.ExternalCategoryIds)).Select(x => x.Id);
             var rootCategoryId = await this.categoryApi.GetRootCategoryId(categoryIds.First());
 
-            var update = add
-                || dto.Properties.Name != product.Name
-                || dto.Properties.Number != product.UniqueId
-                || dto.Properties.ExternalId != product.UniqueId
-                || dto.Properties.Price != product.Price
-                || dto.Properties.Picture != product.Picture
-                || !dto.Properties.MinAges.ContainsReferences(product.MinAgesForYouthProtection)
-                || !dto.Properties.Unit.ContainsReference(unitId)
-                || !dto.Properties.Tax.ContainsReference(taxId)
-                || !dto.Properties.ProductGroup.ContainsReference(groupId)
-                || !dto.Lists.ProductAssortments.ContainsReference(assortmentId)
-                || !dto.Lists.Barcodes.ContainsCode(product.Barcode)
-                || !untypedDto.ContainsAllCategories(rootCategoryId, categoryIds);
+            Func<ProductDetailViewModel, JObject, bool> updateCheck = (typed, untyped) => typed.Properties.Name != product.Name
+                || typed.Properties.Number != product.UniqueId
+                || typed.Properties.ExternalId != product.UniqueId
+                || typed.Properties.Price != product.Price
+                || typed.Properties.Picture != product.Picture
+                || !typed.Properties.MinAges.ContainsReferences(product.MinAgesForYouthProtection)
+                || !typed.Properties.Unit.ContainsReference(unitId)
+                || !typed.Properties.Tax.ContainsReference(taxId)
+                || !typed.Properties.ProductGroup.ContainsReference(groupId)
+                || !typed.Lists.ProductAssortments.ContainsReference(assortmentId)
+                || !typed.Lists.Barcodes.ContainsCode(product.Barcode)
+                || !untyped.ContainsAllCategories(rootCategoryId, categoryIds);
+
+            var update = add || updateCheck(dto, untypedDto);
 
             if (!update)
             {
@@ -140,14 +142,21 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             untypedDto = JObject.FromObject(dto);
             untypedDto.SetCategories(rootCategoryId, categoryIds);
 
-            var response = await this.GetClient()
+            var untypedResponse = await this.GetClient()
                 .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")
                 .PostJsonAsync(untypedDto)
-                .ReceiveJson<ProductDetailViewModel>();
+                .ReceiveJson<JObject>();
+            var response = untypedDto.ToObject<ProductDetailViewModel>();
 
             if (!response.IsValid)
             {
                 throw new ViewModelValidationException();
+            }
+
+            var checkAfterUpdate = updateCheck(response, untypedResponse);
+            if (checkAfterUpdate && this.config.CheckAfterUpdate)
+            {
+                throw new UpdateFailedException();
             }
 
             return response.Properties.Id;

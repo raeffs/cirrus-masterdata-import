@@ -21,7 +21,7 @@ namespace Cirrus.Import.Masterdata.Common
                 return new Price(result / divisor);
             }
 
-            throw new System.Exception();
+            return null;
         }
 
         public static Price FromId(long id, int maxPrice)
