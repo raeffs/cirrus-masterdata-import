@@ -57,12 +57,11 @@ namespace Cirrus.Import.Masterdata
         private async Task ProcessProducts(ExternalProvider provider)
         {
             Console.WriteLine($"Processing products of {provider.Key}");
-            await foreach (var products in provider.GetProductsAsync())
+            await provider.GetProductsAsync().AsyncParallelForEach(async products =>
             {
-                Console.Write($"Processing batch of {products.Count} products");
+                Console.WriteLine($"Processing batch of {products.Count} products");
                 await this.productApi.AddOrUpdateAsync(products);
-                Console.WriteLine();
-            }
+            }, 2);
         }
     }
 }

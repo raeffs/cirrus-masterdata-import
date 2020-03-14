@@ -1,12 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Cirrus.Import.Masterdata.Cirrus
 {
-    abstract class BaseApi<T>
+    abstract class BaseApi<T> : IDisposable
     {
         private readonly HashSet<Mapping<T>> knownMappings = new HashSet<Mapping<T>>();
+        private readonly ReaderWriterLockSlim sync = new ReaderWriterLockSlim();
 
         public async Task<string> GetMappingAsync(string key, T value)
         {
@@ -17,7 +20,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
         {
             values = values.Distinct().ToList();
 
-            var mappings = this.knownMappings.Where(x => (x.Key == key || x.Key == null) && values.Any(y => x.Value.Equals(y)));
+            var mappings = this.GetMappings(key, values);
             var missing = values.Where(x => !mappings.Any(y => x.Equals(y.Value)));
 
             if (!missing.Any())
@@ -26,16 +29,47 @@ namespace Cirrus.Import.Masterdata.Cirrus
             }
 
             var loaded = await this.LoadMappingsAsync(key, missing);
-            this.knownMappings.AddRange(loaded);
+            this.AddMappings(loaded);
 
-            return this.knownMappings.Where(x => (x.Key == key || x.Key == null) && values.Any(y => x.Value.Equals(y)));
+            return this.GetMappings(key, values);
         }
 
         protected abstract Task<IEnumerable<Mapping<T>>> LoadMappingsAsync(string key, IEnumerable<T> values);
 
         protected void AddMapping(Mapping<T> mapping)
         {
-            this.knownMappings.Add(mapping);
+            this.AddMappings(new[] { mapping });
+        }
+
+        private List<Mapping<T>> GetMappings(string key, IEnumerable<T> values)
+        {
+            sync.EnterReadLock();
+            try
+            {
+                return this.knownMappings.Where(x => (x.Key == key || x.Key == null) && values.Any(y => x.Value.Equals(y))).ToList();
+            }
+            finally
+            {
+                sync.ExitReadLock();
+            }
+        }
+
+        private void AddMappings(IEnumerable<Mapping<T>> mappings)
+        {
+            sync.EnterWriteLock();
+            try
+            {
+                this.knownMappings.AddRange(mappings);
+            }
+            finally
+            {
+                sync.ExitWriteLock();
+            }
+        }
+
+        public void Dispose()
+        {
+            sync.Dispose();
         }
     }
 }
