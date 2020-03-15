@@ -20,11 +20,11 @@ namespace Cirrus.Import.Masterdata
         {
             try
             {
-                FlurlHttp.Configure(settings => settings.HttpClientFactory = new PollyHttpClientFactory());
-
                 var configuation = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json", false)
-                    .AddJsonFile("appsettings.development.json", true)
+                    .AddJsonFile("appsettings.json", false, true)
+#if DEBUG
+                    .AddJsonFile("appsettings.development.json", true, true)
+#endif
                     .Build();
 
                 var services = new ServiceCollection();
@@ -54,7 +54,13 @@ namespace Cirrus.Import.Masterdata
                 services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
                 services.AddExternalProvider<External.Fono.FonoProvider, External.Fono.FonoOptions>("Fono");
 
-                var importer = services.BuildServiceProvider().GetService<Importer>();
+                services.AddSingleton<PollyHttpClientFactory>();
+
+                var serviceProvider = services.BuildServiceProvider();
+
+                FlurlHttp.Configure(settings => settings.HttpClientFactory = serviceProvider.GetService<PollyHttpClientFactory>());
+
+                var importer = serviceProvider.GetService<Importer>();
                 await importer.Import();
 
                 Console.WriteLine("Import completed");

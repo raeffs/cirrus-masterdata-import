@@ -6,7 +6,7 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Assortments
 {
-    class AssortmentApi : BaseApi<string>
+    class AssortmentApi : MappedApi<string>
     {
         private readonly ApiOptions config;
 

@@ -7,7 +7,7 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Units
 {
-    class UnitApi : BaseApi<Unit>
+    class UnitApi : MappedApi<Unit>
     {
         private readonly ApiOptions config;
         private readonly Dictionary<string, Unit> mapping = new Dictionary<string, Unit>

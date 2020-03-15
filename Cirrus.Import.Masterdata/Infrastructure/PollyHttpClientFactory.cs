@@ -5,9 +5,16 @@ namespace Cirrus.Import.Masterdata.Infrastructure
 {
     class PollyHttpClientFactory : DefaultHttpClientFactory
     {
+        private readonly ApiOptions options;
+
+        public PollyHttpClientFactory(ApiOptions options)
+        {
+            this.options = options;
+        }
+
         public override HttpMessageHandler CreateMessageHandler()
         {
-            return new PolicyHandler
+            return new PolicyHandler(this.options)
             {
                 InnerHandler = base.CreateMessageHandler()
             };

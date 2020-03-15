@@ -15,7 +15,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
             Mapping<T> mapping = value as Mapping<T>;
 
             return !Object.ReferenceEquals(null, mapping)
-                && String.Equals(Id, mapping.Id)
+                //&& String.Equals(Id, mapping.Id)
                 && String.Equals(Key, mapping.Key)
                 && String.Equals(Value, mapping.Value);
         }
@@ -28,7 +28,7 @@ namespace Cirrus.Import.Masterdata.Cirrus
                 const int HashingMultiplier = 16777619;
 
                 int hash = HashingBase;
-                hash = (hash * HashingMultiplier) ^ (!Object.ReferenceEquals(null, Id) ? Id.GetHashCode() : 0);
+                //hash = (hash * HashingMultiplier) ^ (!Object.ReferenceEquals(null, Id) ? Id.GetHashCode() : 0);
                 hash = (hash * HashingMultiplier) ^ (!Object.ReferenceEquals(null, Key) ? Key.GetHashCode() : 0);
                 hash = (hash * HashingMultiplier) ^ (!Object.ReferenceEquals(null, Value) ? Value.GetHashCode() : 0);
                 return hash;

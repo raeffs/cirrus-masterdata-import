@@ -6,7 +6,7 @@ using Flurl.Http;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Categories
 {
-    class CategoryApi : BaseApi<string>
+    class CategoryApi : MappedApi<string>
     {
         private readonly ApiOptions config;
         private readonly Dictionary<string, string> childToParentMap = new Dictionary<string, string>();

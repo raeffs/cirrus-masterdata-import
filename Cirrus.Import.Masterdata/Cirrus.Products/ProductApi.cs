@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Products
 {
-    class ProductApi : BaseApi<string>
+    class ProductApi : BaseApi<Product>
     {
         private readonly ApiOptions config;
         private readonly UnitApi unitApi;
@@ -29,6 +29,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             GroupApi groupApi,
             AssortmentApi assortmentApi,
             CategoryApi categoryApi)
+            : base(config)
         {
             this.config = config;
             this.unitApi = unitApi;
@@ -36,25 +37,6 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             this.groupApi = groupApi;
             this.assortmentApi = assortmentApi;
             this.categoryApi = categoryApi;
-        }
-
-        public async Task AddOrUpdateAsync(IEnumerable<Product> products)
-        {
-            var key = products.Select(x => x.ExternalKey).Distinct().Single();
-            await this.GetMappingsAsync(key, products.Select(x => x.ExternalId));
-            foreach (var product in products)
-            {
-                try
-                {
-                    var id = await this.AddOrUpdateAsync(product);
-                    this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = product.ExternalId });
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Failed to add or update product (Key = {key}, Value = {product.ExternalId})");
-                    Console.WriteLine(e.Message);
-                }
-            }
         }
 
         protected override async Task<IEnumerable<Mapping<string>>> LoadMappingsAsync(string key, IEnumerable<string> values)
@@ -79,7 +61,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             return mappings;
         }
 
-        private async Task<string> AddOrUpdateAsync(Product product)
+        protected override async Task<string> AddOrUpdateAsync(Product product)
         {
             var id = await this.GetMappingAsync(product.ExternalKey, product.ExternalId);
             var add = string.IsNullOrWhiteSpace(id);
@@ -170,10 +152,12 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
             return response.Properties.Id;
         }
 
-        private IFlurlRequest GetClient()
+        protected override async Task DeleteAsync(IEnumerable<Mapping<string>> toDelete)
         {
-            return this.config.Endpoint
-                .WithOAuthBearerToken(this.config.Token);
+            await this.GetClient()
+                .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")
+                .SetQueryParam("selectedIds", string.Join(',', toDelete.Select(x => x.Id)))
+                .DeleteAsync();
         }
     }
 }

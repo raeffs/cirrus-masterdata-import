@@ -5,7 +5,7 @@ using Cirrus.Import.Masterdata.Common;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Groups
 {
-    class GroupApi : BaseApi<Group>
+    class GroupApi : MappedApi<Group>
     {
         private readonly GroupOptions groupOptions;
 

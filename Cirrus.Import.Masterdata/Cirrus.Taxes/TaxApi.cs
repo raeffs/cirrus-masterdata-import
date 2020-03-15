@@ -5,7 +5,7 @@ using Cirrus.Import.Masterdata.Common;
 
 namespace Cirrus.Import.Masterdata.Cirrus.Taxes
 {
-    class TaxApi : BaseApi<Tax>
+    class TaxApi : MappedApi<Tax>
     {
         private readonly TaxOptions taxOptions;
 

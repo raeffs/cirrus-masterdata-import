@@ -11,17 +11,20 @@ namespace Cirrus.Import.Masterdata
 {
     class Importer
     {
+        private readonly ApiOptions options;
         private readonly AssortmentApi assortmentApi;
         private readonly CategoryApi categoryApi;
         private readonly ProductApi productApi;
         private readonly IEnumerable<ExternalProvider> providers;
 
         public Importer(
+            ApiOptions options,
             AssortmentApi assortmentApi,
             CategoryApi categoryApi,
             ProductApi productApi,
             IEnumerable<ExternalProvider> providers)
         {
+            this.options = options;
             this.assortmentApi = assortmentApi;
             this.categoryApi = categoryApi;
             this.productApi = productApi;
@@ -40,28 +43,26 @@ namespace Cirrus.Import.Masterdata
 
         private async Task ProcessAssortments(ExternalProvider provider)
         {
-            Console.Write($"Processing assortments of {provider.Key}");
+            await Console.Out.WriteLineAsync($"Processing assortments of {provider.Key}");
             var assortments = await provider.GetAssortmentsAsync();
             await this.assortmentApi.AddOrUpdateAsync(assortments);
-            Console.WriteLine();
         }
 
         private async Task ProcessCategories(ExternalProvider provider)
         {
-            Console.Write($"Processing categories of {provider.Key}");
+            await Console.Out.WriteLineAsync($"Processing categories of {provider.Key}");
             var categories = await provider.GetCategoriesAsync();
             await this.categoryApi.AddOrUpdateAsync(categories);
-            Console.WriteLine();
         }
 
         private async Task ProcessProducts(ExternalProvider provider)
         {
-            Console.WriteLine($"Processing products of {provider.Key}");
-            await provider.GetProductsAsync().AsyncParallelForEach(async products =>
+            await Console.Out.WriteLineAsync($"Processing products of {provider.Key}");
+            await foreach (var products in provider.GetProductsAsync())
             {
-                Console.WriteLine($"Processing batch of {products.Count} products");
+                await Console.Out.WriteLineAsync($"Processing batch of {products.Count} products");
                 await this.productApi.AddOrUpdateAsync(products);
-            }, 2);
+            }
         }
     }
 }

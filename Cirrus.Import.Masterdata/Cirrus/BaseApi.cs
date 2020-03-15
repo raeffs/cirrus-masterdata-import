@@ -1,75 +1,69 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
+using Cirrus.Import.Masterdata.Common;
+using Flurl.Http;
+using Polly;
 
 namespace Cirrus.Import.Masterdata.Cirrus
 {
-    abstract class BaseApi<T> : IDisposable
+    abstract class BaseApi<TModel> : MappedApi<string>
+        where TModel : BaseModel
     {
-        private readonly HashSet<Mapping<T>> knownMappings = new HashSet<Mapping<T>>();
-        private readonly ReaderWriterLockSlim sync = new ReaderWriterLockSlim();
+        private readonly ApiOptions options;
 
-        public async Task<string> GetMappingAsync(string key, T value)
+        public BaseApi(ApiOptions options)
         {
-            return (await this.GetMappingsAsync(key, new[] { value })).Select(x => x.Id).SingleOrDefault();
+            this.options = options;
         }
 
-        public async Task<IEnumerable<Mapping<T>>> GetMappingsAsync(string key, IEnumerable<T> values)
+        public async Task AddOrUpdateAsync(IEnumerable<TModel> models)
         {
-            values = values.Distinct().ToList();
-
-            var mappings = this.GetMappings(key, values);
-            var missing = values.Where(x => !mappings.Any(y => x.Equals(y.Value)));
-
-            if (!missing.Any())
+            var key = models.Select(x => x.ExternalKey).Distinct().Single();
+            await this.GetMappingsAsync(key, models.Select(x => x.ExternalId));
+            foreach (var model in models)
             {
-                return mappings;
-            }
-
-            var loaded = await this.LoadMappingsAsync(key, missing);
-            this.AddMappings(loaded);
-
-            return this.GetMappings(key, values);
-        }
-
-        protected abstract Task<IEnumerable<Mapping<T>>> LoadMappingsAsync(string key, IEnumerable<T> values);
-
-        protected void AddMapping(Mapping<T> mapping)
-        {
-            this.AddMappings(new[] { mapping });
-        }
-
-        private List<Mapping<T>> GetMappings(string key, IEnumerable<T> values)
-        {
-            sync.EnterReadLock();
-            try
-            {
-                return this.knownMappings.Where(x => (x.Key == key || x.Key == null) && values.Any(y => x.Value.Equals(y))).ToList();
-            }
-            finally
-            {
-                sync.ExitReadLock();
+                try
+                {
+                    await this.RetryPolicy.ExecuteAsync(async () =>
+                    {
+                        var id = await this.AddOrUpdateAsync(model);
+                        this.AddMapping(new Mapping<string> { Id = id, Key = key, Value = model.ExternalId });
+                    });
+                }
+                catch (Exception e)
+                {
+                    await Console.Error.WriteLineAsync($"Failed to add or update ({key}, {model.ExternalId})");
+                    await Console.Error.WriteLineAsync(e.Message);
+                }
             }
         }
 
-        private void AddMappings(IEnumerable<Mapping<T>> mappings)
+        protected abstract Task<string> AddOrUpdateAsync(TModel model);
+
+        protected override async Task ProcessDuplicatesAsync(Mapping<string> key, IEnumerable<Mapping<string>> duplicates)
         {
-            sync.EnterWriteLock();
-            try
-            {
-                this.knownMappings.AddRange(mappings);
-            }
-            finally
-            {
-                sync.ExitWriteLock();
-            }
+            await Console.Out.WriteLineAsync($"Found duplicate mappings ({key.Key}, {key.Value})");
+            await this.RetryPolicy.ExecuteAsync(() => this.DeleteAsync(duplicates));
         }
 
-        public void Dispose()
+        protected virtual Task DeleteAsync(IEnumerable<Mapping<string>> toDelete) => Task.CompletedTask;
+
+        protected IFlurlRequest GetClient()
         {
-            sync.Dispose();
+            return this.options.Endpoint
+                .WithOAuthBearerToken(this.options.Token);
         }
+
+        private AsyncPolicy RetryPolicy => Policy
+            .Handle<Exception>()
+            .WaitAndRetryAsync(
+                this.options.RetryIntervalsInSeconds.Select(x => TimeSpan.FromSeconds(x)),
+                async (exception, timeSpan, attempt, context) =>
+                {
+                    await Console.Out.WriteLineAsync($"Execution failed, attemt {attempt}, retrying in {timeSpan.TotalSeconds} seconds");
+                    await Console.Out.WriteLineAsync($"-> {exception.Message}");
+                });
     }
 }
