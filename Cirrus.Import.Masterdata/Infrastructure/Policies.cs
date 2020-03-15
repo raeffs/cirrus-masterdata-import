@@ -12,7 +12,7 @@ namespace Cirrus.Import.Masterdata.Infrastructure
     {
         public static AsyncPolicyWrap<HttpResponseMessage> PolicyStrategy => Policy.WrapAsync(RetryPolicy, TimeoutPolicy);
 
-        private static AsyncTimeoutPolicy<HttpResponseMessage> TimeoutPolicy => Policy.TimeoutAsync<HttpResponseMessage>(3, (context, timeSpan, task) =>
+        private static AsyncTimeoutPolicy<HttpResponseMessage> TimeoutPolicy => Policy.TimeoutAsync<HttpResponseMessage>(4, (context, timeSpan, task) =>
             {
                 Console.WriteLine($"Timeout policy fired after {timeSpan.Seconds} seconds");
                 return Task.CompletedTask;

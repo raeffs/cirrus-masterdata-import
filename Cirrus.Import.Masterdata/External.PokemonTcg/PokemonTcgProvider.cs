@@ -11,6 +11,7 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
         private readonly string AssortmentId = "Pokemon TCG Cards";
         private readonly string RootCategoryId = "Pokemon TCG Cards";
         private readonly PokemonTcgOptions options;
+        private IReadOnlyList<Category> categories;
 
         public bool Enabled => this.options.Enabled;
 
@@ -33,21 +34,38 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
             });
         }
 
-        public Task<List<Category>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync()
         {
-            return Task.FromResult(new List<Category>
+            if (this.categories != null)
             {
-                new Category
+                return this.categories.ToList();
+            }
+
+            var categories = new List<Category>
+            {
+                new Category { ExternalKey = this.Key, ExternalId = this.RootCategoryId }
+            };
+
+            var result = await this.GetClient()
+                .AppendPathSegment("sets")
+                .GetJsonAsync<SetCollectionDto>();
+
+            categories.AddRange(result.Sets
+                .Select(x => new Category
                 {
                     ExternalKey = this.Key,
-                    ExternalId = this.RootCategoryId
-                }
-            });
+                    ExternalId = x.Name,
+                    ExternalParentId = this.RootCategoryId
+                })
+                .ToList());
+
+            this.categories = categories;
+            return this.categories.ToList();
         }
 
         public async IAsyncEnumerable<List<Product>> GetProductsAsync()
         {
-            CollectionDto<ProductDto> response;
+            CardCollectionDto response;
             bool hasMore;
             var pageSize = 200;
             var nextPage = 1;
@@ -58,12 +76,12 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
                     .AppendPathSegment("cards")
                     .SetQueryParam("page", nextPage)
                     .SetQueryParam("pageSize", pageSize)
-                    .GetJsonAsync<CollectionDto<ProductDto>>();
+                    .GetJsonAsync<CardCollectionDto>();
 
-                hasMore = response.Items.Count == pageSize;
+                hasMore = response.Cards.Count == pageSize;
                 nextPage++;
 
-                yield return response.Items
+                yield return response.Cards
                     .Select(x => new Product
                     {
                         ExternalKey = this.Key,
@@ -76,7 +94,7 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
                         Barcode = Barcode.FromId(this.Key, x.Id),
                         Price = Price.FromId(x.Id, this.GetMaxPrice(x.Rarity)),
                         Picture = x.Picture,
-                        ExternalCategoryIds = new List<string> { this.RootCategoryId }
+                        ExternalCategoryIds = new List<string> { x.Set }
                     })
                     .ToList();
             }

@@ -1,8 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Cirrus.Import.Masterdata.External.PokemonTcg
 {
-    class ProductDto
+    class CardDto
     {
         public string Id { get; set; }
 
@@ -12,5 +13,12 @@ namespace Cirrus.Import.Masterdata.External.PokemonTcg
         public string Picture { get; set; }
 
         public string Rarity { get; set; }
+
+        public string Set { get; set; }
+    }
+
+    class CardCollectionDto
+    {
+        public List<CardDto> Cards { get; set; }
     }
 }

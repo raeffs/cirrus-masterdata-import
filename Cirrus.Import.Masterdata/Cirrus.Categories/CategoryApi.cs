@@ -50,22 +50,45 @@ namespace Cirrus.Import.Masterdata.Cirrus.Categories
 
             do
             {
-                var expandedIds = response?.Data?.Select(x => x.Id).Where(x => mappings.Any(y => y.Id == x)) ?? new List<string>();
+                var expandedIds = newMappings.Select(x => x.Id) ?? new List<string>();
+                newMappings = new List<Mapping<string>>();
 
-                response = await this.GetClient()
-                    .AppendPathSegment("api/vme/v1/viewmodel/tree/MdmProductCategories")
-                    .SetQueryParam("expandedIds", string.Join(',', expandedIds))
-                    .GetJsonAsync<TreeViewModel<CategoryTreeViewModel>>();
-
-                newMappings = response.Data
-                    .Where(x => namesOfInterest.Contains(x.Name) && !mappings.Any(y => y.Id == x.Id))
-                    .Select(x => new Mapping<string>
+                if (expandedIds.Any())
+                {
+                    foreach (var ids in expandedIds.ChunkBy(25))
                     {
-                        Id = x.Id,
-                        Key = key,
-                        Value = values.Single(y => x.Name == $"{y} ({key})")
-                    })
-                    .ToList();
+                        response = await this.GetClient()
+                            .AppendPathSegment("api/vme/v1/viewmodel/tree/MdmProductCategories")
+                            .SetQueryParam("expandedIds", string.Join(',', ids))
+                            .GetJsonAsync<TreeViewModel<CategoryTreeViewModel>>();
+
+                        newMappings.AddRange(response.Data
+                            .Where(x => namesOfInterest.Contains(x.Name) && !mappings.Any(y => y.Id == x.Id))
+                            .Select(x => new Mapping<string>
+                            {
+                                Id = x.Id,
+                                Key = key,
+                                Value = values.Single(y => x.Name == $"{y} ({key})")
+                            })
+                            .ToList());
+                    }
+                }
+                else
+                {
+                    response = await this.GetClient()
+                        .AppendPathSegment("api/vme/v1/viewmodel/tree/MdmProductCategories")
+                        .GetJsonAsync<TreeViewModel<CategoryTreeViewModel>>();
+
+                    newMappings = response.Data
+                        .Where(x => namesOfInterest.Contains(x.Name) && !mappings.Any(y => y.Id == x.Id))
+                        .Select(x => new Mapping<string>
+                        {
+                            Id = x.Id,
+                            Key = key,
+                            Value = values.Single(y => x.Name == $"{y} ({key})")
+                        })
+                        .ToList();
+                }
 
                 mappings.AddRange(newMappings);
             }
