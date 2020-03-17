@@ -53,6 +53,7 @@ namespace Cirrus.Import.Masterdata
                 services.AddExternalProvider<External.Giantbomb.GiantbombProvider, External.Giantbomb.GiantbombOptions>("Giantbomb");
                 services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
                 services.AddExternalProvider<External.Fono.FonoProvider, External.Fono.FonoOptions>("Fono");
+                services.AddExternalProvider<External.CarQuery.CarQueryProvider, External.CarQuery.CarQueryOptions>("CarQuery");
 
                 services.AddSingleton<PollyHttpClientFactory>();
 
