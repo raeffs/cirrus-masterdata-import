@@ -156,7 +156,7 @@ namespace Cirrus.Import.Masterdata.Cirrus.Products
         {
             await this.GetClient()
                 .AppendPathSegment("api/vme/v1/viewmodel/MdmProducts")
-                .SetQueryParam("selectedIds", string.Join(',', toDelete.Select(x => x.Id)))
+                .SetQueryParam("selectedIds", string.Join(';', toDelete.Select(x => x.Id)))
                 .DeleteAsync();
         }
     }

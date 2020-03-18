@@ -45,7 +45,15 @@ namespace Cirrus.Import.Masterdata.Cirrus
         protected override async Task ProcessDuplicatesAsync(Mapping<string> key, IEnumerable<Mapping<string>> duplicates)
         {
             await Console.Out.WriteLineAsync($"Found duplicate mappings ({key.Key}, {key.Value})");
-            await this.RetryPolicy.ExecuteAsync(() => this.DeleteAsync(duplicates));
+            try
+            {
+                await this.RetryPolicy.ExecuteAsync(() => this.DeleteAsync(duplicates));
+            }
+            catch (Exception e)
+            {
+                await Console.Error.WriteLineAsync($"Failed to delete ({key}, {string.Join(';', duplicates.Select(x => x.Value))})");
+                await Console.Error.WriteLineAsync(e.Message);
+            }
         }
 
         protected virtual Task DeleteAsync(IEnumerable<Mapping<string>> toDelete) => Task.CompletedTask;

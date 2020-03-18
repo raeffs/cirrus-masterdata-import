@@ -73,9 +73,9 @@ namespace Cirrus.Import.Masterdata.External.CarQuery
                 }
 
                 var result = await this.GetClient()
-                                        .SetQueryParam("cmd", "getTrims")
-                                        .SetQueryParam("make", category.ExternalId.Replace(' ', '-'))
-                                        .GetJsonAsync<CarCollectionDto>();
+                    .SetQueryParam("cmd", "getTrims")
+                    .SetQueryParam("make", category.ExternalId.Replace(' ', '-'))
+                    .GetJsonAsync<CarCollectionDto>();
 
                 yield return result.Trims
                     .Select(x => new Product
