@@ -20,6 +20,11 @@ namespace Cirrus.Import.Masterdata.Cirrus
 
         public async Task AddOrUpdateAsync(IEnumerable<TModel> models)
         {
+            if (models == null || !models.Any())
+            {
+                return;
+            }
+
             var key = models.Select(x => x.ExternalKey).Distinct().Single();
             await this.GetMappingsAsync(key, models.Select(x => x.ExternalId));
             foreach (var model in models)
