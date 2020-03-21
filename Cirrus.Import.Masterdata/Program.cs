@@ -44,16 +44,16 @@ namespace Cirrus.Import.Masterdata
                 services.AddSingleton<CategoryApi>();
                 services.AddSingleton<ProductApi>();
 
+                services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
+                services.AddExternalProvider<External.PunkApi.PunkApiProvider, External.PunkApi.PunkApiOptions>("PunkApi");
                 services.AddExternalProvider<External.TheMealDb.TheMealDbProvider, External.TheMealDb.TheMealDbOptions>("TheMealDb");
                 services.AddExternalProvider<External.TheCocktailDb.TheCocktailDbProvider, External.TheCocktailDb.TheCocktailDbOptions>("TheCocktailDb");
-                services.AddExternalProvider<External.Scryfall.ScryfallProvider, External.Scryfall.ScryfallOptions>("Scryfall");
-                services.AddExternalProvider<External.PokemonTcg.PokemonTcgProvider, External.PokemonTcg.PokemonTcgOptions>("PokemonTcg");
-                services.AddExternalProvider<External.Brickset.BricksetProvider, External.Brickset.BricksetOptions>("Brickset");
-                services.AddExternalProvider<External.PunkApi.PunkApiProvider, External.PunkApi.PunkApiOptions>("PunkApi");
-                services.AddExternalProvider<External.Giantbomb.GiantbombProvider, External.Giantbomb.GiantbombOptions>("Giantbomb");
-                services.AddExternalProvider<External.Swapi.SwapiProvider, External.Swapi.SwapiOptions>("Swapi");
                 services.AddExternalProvider<External.Fono.FonoProvider, External.Fono.FonoOptions>("Fono");
+                services.AddExternalProvider<External.Brickset.BricksetProvider, External.Brickset.BricksetOptions>("Brickset");
+                services.AddExternalProvider<External.PokemonTcg.PokemonTcgProvider, External.PokemonTcg.PokemonTcgOptions>("PokemonTcg");
+                services.AddExternalProvider<External.Scryfall.ScryfallProvider, External.Scryfall.ScryfallOptions>("Scryfall");
                 services.AddExternalProvider<External.CarQuery.CarQueryProvider, External.CarQuery.CarQueryOptions>("CarQuery");
+                services.AddExternalProvider<External.Giantbomb.GiantbombProvider, External.Giantbomb.GiantbombOptions>("Giantbomb");
 
                 services.AddSingleton<PollyHttpClientFactory>();
 

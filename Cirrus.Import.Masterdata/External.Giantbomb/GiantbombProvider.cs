@@ -125,7 +125,7 @@ namespace Cirrus.Import.Masterdata.External.Giantbomb
                         Barcode = Barcode.FromId(this.Key, x.Guid),
                         Price = Price.FromId(x.Guid, 100),
                         Picture = x.Picture,
-                        ExternalCategoryIds = x.Platforms.Select(y => y.Name).ToList()
+                        ExternalCategoryIds = x.Platforms?.Select(y => y.Name)?.ToList() ?? new List<string>()
                     })
                     .ToList();
             }
